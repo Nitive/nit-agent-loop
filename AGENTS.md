@@ -31,6 +31,8 @@
 - Formatting uses Prettier with trailing commas (`.prettierrc.json`).
 - Use async filesystem APIs via `import fsp from "node:fs/promises"`; avoid Node.js sync FS APIs (`*Sync`).
 - Create required data directories asynchronously at startup (before opening SQLite files).
+- Use kebab-case for file and directory names (for example, `app-context.ts`, `test-helpers/`).
+- Keep established ecosystem convention paths when needed (for example, `__tests__/`).
 - For terminal inspection, prefer `batcat` for file views and `delta` for diff output.
 - When showing diffs in terminal, render raw `delta` output (do not strip ANSI sequences). When pasting diffs into chat, use `delta --color-only` for readable text.
 - Skills for the agent environment are committed under `agent/.agents/skills/` to keep developer setup consistent; `skills-lock.json` is metadata for source/version tracking.

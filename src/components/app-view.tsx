@@ -6,8 +6,8 @@ import {
   savePlaneConfig,
   type PlaneConfig,
 } from "../db/database.js"
-import { useAppContext } from "../hooks/appContext.js"
-import { PlaneConfigScreen } from "./planeConfig.js"
+import { useAppContext } from "../hooks/app-context.js"
+import { PlaneConfigScreen } from "./plane-config.js"
 
 type View = "main" | "config"
 

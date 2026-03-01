@@ -1,6 +1,6 @@
 import type { DatabaseSync } from "node:sqlite"
 import { openDatabase } from "../db/database.js"
-import type { AppContextValue } from "../hooks/appContext.js"
+import type { AppContextValue } from "../hooks/app-context.js"
 
 type CreateAppContextValueOptions = {
   database: DatabaseSync

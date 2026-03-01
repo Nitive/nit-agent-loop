@@ -8,7 +8,7 @@ import { AppWithContext } from "../app.js"
 import {
   createAppContextValue,
   createManagedDatabase,
-} from "../utils/appContext.js"
+} from "../utils/app-context.js"
 import { cleanupAfterEach } from "./cleanup.js"
 import {
   sleep,

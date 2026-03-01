@@ -1,11 +1,11 @@
 import { useCallback, useMemo, useRef } from "react"
-import { AppView } from "./components/appView.js"
-import { AppContext, type AppContextValue } from "./hooks/appContext.js"
+import { AppView } from "./components/app-view.js"
+import { AppContext, type AppContextValue } from "./hooks/app-context.js"
 import { useExitHandlers } from "./hooks/exit.js"
 import {
   createAppContextValue,
   createManagedDatabase,
-} from "./utils/appContext.js"
+} from "./utils/app-context.js"
 
 const useDefaultAppContext = (): AppContextValue => {
   const managedDatabaseRef = useRef<ReturnType<
