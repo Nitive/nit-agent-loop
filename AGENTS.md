@@ -17,7 +17,7 @@
 - `make lint-fix`: Run ESLint with autofix.
 - `make format`: Format files with Prettier.
 - `make format-check`: Verify formatting with Prettier.
-- `make agent`: Build and start the Dockerized development agent.
+- `make agent`: Build and start the Dockerized development agent (`agent/start.sh` fixes runtime permissions and resumes `main` when available).
 - `make attach`: Attach to the running agent container.
 
 ## Coding Style & Naming Conventions
@@ -26,6 +26,7 @@
 - Use TypeScript + ESM modules (`"type": "module"`).
 - Linting uses ESLint flat config (`eslint.config.js`) with TypeScript + Node globals.
 - Formatting uses Prettier with trailing commas (`.prettierrc.json`).
+- For terminal inspection, prefer `batcat` for file views `delta` for diff output.
 - Skills for the agent environment are committed under `agent/.agents/skills/` to keep developer setup consistent; `skills-lock.json` is metadata for source/version tracking.
 - Prefer `camelCase` for variables/functions, `PascalCase` for React components, and clear constant names (e.g., `exitSignals`).
 - Keep files focused: one primary component/module responsibility per file.

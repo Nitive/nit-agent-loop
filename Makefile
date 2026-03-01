@@ -1,11 +1,14 @@
 .PHONY: *
 
 container_name=agent$(shell pwd | tr '/' '-' | tr '[:upper:]' '[:lower:]')
+CODEX_SESSION_NAME ?= main
 
 agent:
+	mkdir -p ./agent/tmp ./agent/.codex ./agent/.agents
 	docker build ./agent/ -t agent
 	docker run --rm -it \
 	  --name $(container_name) \
+	  -e CODEX_SESSION_NAME="$(CODEX_SESSION_NAME)" \
 	  -v "$(PWD):/app" \
 	  -v ./agent/tmp/:/tmp/ \
 	  -v ./agent/.codex/:/home/me/.codex/ \
