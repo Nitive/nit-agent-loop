@@ -39,3 +39,9 @@ format:
 
 format-check:
 	pnpm exec prettier . --check
+
+test:
+	pnpm exec vitest run
+
+test-watch:
+	pnpm exec vitest

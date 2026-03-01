@@ -9,3 +9,4 @@ trust_level = "trusted"
 
 [tui]
 status_line = ["model-with-reasoning", "context-remaining", "current-dir", "five-hour-limit", "weekly-limit"]
+theme = "base16-ocean-light"

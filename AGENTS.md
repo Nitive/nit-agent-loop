@@ -17,6 +17,8 @@
 - `make lint-fix`: Run ESLint with autofix.
 - `make format`: Format files with Prettier.
 - `make format-check`: Verify formatting with Prettier.
+- `make test`: Run the Vitest test suite.
+- `make test-watch`: Run Vitest in watch mode.
 - `make agent`: Build and start the Dockerized development agent (`agent/start.sh` fixes runtime permissions and resumes `main` when available).
 - `make attach`: Attach to the running agent container.
 
@@ -35,10 +37,11 @@
 
 ## Testing Guidelines
 
-- No test framework is configured yet.
-- For new features, add tests with the framework you introduce and document the command in `Makefile` (for example, `make test`).
-- Name tests by behavior, e.g., `src/__tests__/app-exit-signals.test.ts`.
-- At minimum, verify startup, signal handling, and clean exit behavior for CLI flows.
+- Test runner is `vitest` (Node environment).
+- Use `ink-testing-library` for Ink UI behavior and `fetch-mock` for HTTP mocking.
+- Put tests under `src/**/__tests__` or as `*.test.ts(x)` near the code under test.
+- Keep tests isolated: use temporary directories/files for SQLite-backed flows.
+- At minimum, verify startup, signal handling, config persistence, and clean exit behavior for CLI flows.
 
 ## Commit & Pull Request Guidelines
 

@@ -1,36 +1,19 @@
 import type { DatabaseSync } from "node:sqlite"
-import { useCallback, useRef } from "react"
-import { openDatabase } from "../db/database.js"
-import { useExitHandlers } from "./exit.js"
+import { createContext, useContext } from "react"
 
-type AppContext = {
+export type AppContextValue = {
   database: DatabaseSync
+  fetch: typeof globalThis.fetch
   useExit: () => void
 }
 
-export const useAppContext = (): AppContext => {
-  const databaseRef = useRef<DatabaseSync | null>(null)
-  const isClosedRef = useRef(false)
+export const AppContext = createContext<AppContextValue | null>(null)
 
-  if (databaseRef.current === null) {
-    databaseRef.current = openDatabase()
+export const useAppContext = (): AppContextValue => {
+  const context = useContext(AppContext)
+  if (context === null) {
+    throw new Error("useAppContext must be used within <AppContext.Provider>")
   }
 
-  const cleanup = useCallback(() => {
-    if (isClosedRef.current || databaseRef.current === null) {
-      return
-    }
-
-    databaseRef.current.close()
-    isClosedRef.current = true
-  }, [])
-
-  const useExit = () => {
-    useExitHandlers(cleanup)
-  }
-
-  return {
-    database: databaseRef.current,
-    useExit,
-  }
+  return context
 }
