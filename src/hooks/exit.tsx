@@ -19,7 +19,7 @@ export const useExitHandlers = (onExit?: () => void) => {
   }, [exit, onExit])
 
   useInput((input, key) => {
-    if (key.ctrl && input === "d") {
+    if (key.ctrl && input === "d" || input === "q") {
       exitWithCleanup()
     }
   })

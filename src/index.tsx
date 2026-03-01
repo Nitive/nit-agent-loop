@@ -1,5 +1,5 @@
 import process from "node:process"
-import { Box, render, Text, useInput } from "ink"
+import { Box, render, Text, useApp, useInput } from "ink"
 import { useState } from "react"
 import { getPlaneConfig, savePlaneConfig } from "./db/database.js"
 import { useAppContext } from "./hooks/appContext.js"
@@ -215,24 +215,29 @@ const App = () => {
   }
 
   return (
-    <Box width={width} height={height} flexDirection="row">
-      <Box
-        width="50%"
-        height="100%"
-        borderStyle="single"
-        justifyContent="center"
-        alignItems="center"
-      >
-        <Text>hello</Text>
+    <Box width={width} height={height} flexDirection="column">
+      <Box flexGrow={1} flexDirection="row">
+        <Box
+          width="50%"
+          height="100%"
+          borderStyle="single"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Text>hello</Text>
+        </Box>
+        <Box
+          width="50%"
+          height="100%"
+          borderStyle="single"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Text>(world)</Text>
+        </Box>
       </Box>
-      <Box
-        width="50%"
-        height="100%"
-        borderStyle="single"
-        justifyContent="center"
-        alignItems="center"
-      >
-        <Text>(world)</Text>
+      <Box height={1} paddingX={1}>
+        <Text dimColor>q:Quit</Text>
       </Box>
     </Box>
   )
