@@ -27,7 +27,8 @@
 - Use TypeScript + ESM modules (`"type": "module"`).
 - Linting uses ESLint flat config (`eslint.config.js`) with TypeScript + Node globals.
 - Formatting uses Prettier with trailing commas (`.prettierrc.json`).
-- For terminal inspection, prefer `batcat` for file views `delta` for diff output.
+- For terminal inspection, prefer `batcat` for file views and `delta` for diff output.
+- When showing diffs in terminal, render raw `delta` output (do not strip ANSI sequences). When pasting diffs into chat, use `delta --color-only` for readable text.
 - Skills for the agent environment are committed under `agent/.agents/skills/` to keep developer setup consistent; `skills-lock.json` is metadata for source/version tracking.
 - Prefer `camelCase` for variables/functions, `PascalCase` for React components, and clear constant names (e.g., `exitSignals`).
 - Keep files focused: one primary component/module responsibility per file.

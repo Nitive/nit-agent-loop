@@ -1,9 +1,10 @@
 import process from "node:process"
 import { Box, render, Text } from "ink"
-import { useExitHandlers } from "./hooks/exit.js"
+import { useAppContext } from "./hooks/appContext.js"
 
 const App = () => {
-  useExitHandlers()
+  const { useExit } = useAppContext()
+  useExit()
 
   const width = process.stdout.columns || 80
   const height = process.stdout.rows || 24

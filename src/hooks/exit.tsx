@@ -1,24 +1,35 @@
 import process from "node:process"
 import { useApp, useInput } from "ink"
-import { useEffect } from "react"
+import { useCallback, useEffect, useRef } from "react"
 
 const exitSignals = ["SIGTERM", "SIGHUP", "SIGQUIT"] as const
 
-export const useExitHandlers = () => {
+export const useExitHandlers = (onExit?: () => void) => {
   const { exit } = useApp()
+  const hasExitedRef = useRef(false)
+
+  const exitWithCleanup = useCallback(() => {
+    if (hasExitedRef.current) {
+      return
+    }
+
+    hasExitedRef.current = true
+    onExit?.()
+    exit()
+  }, [exit, onExit])
 
   useInput((input, key) => {
     if (key.ctrl && input === "d") {
-      exit()
+      exitWithCleanup()
     }
   })
 
   useEffect(() => {
     const handleSignal = () => {
-      exit()
+      exitWithCleanup()
     }
     const handleStdinEnd = () => {
-      exit()
+      exitWithCleanup()
     }
 
     for (const signal of exitSignals) {
@@ -34,5 +45,16 @@ export const useExitHandlers = () => {
       process.stdin.removeListener("end", handleStdinEnd)
       process.stdin.removeListener("close", handleStdinEnd)
     }
-  }, [exit])
+  }, [exitWithCleanup])
+
+  useEffect(() => {
+    return () => {
+      if (hasExitedRef.current) {
+        return
+      }
+
+      hasExitedRef.current = true
+      onExit?.()
+    }
+  }, [onExit])
 }
