@@ -1,6 +1,7 @@
+.PHONY: *
+
 container_name=agent$(shell pwd | tr '/' '-' | tr '[:upper:]' '[:lower:]')
 
-.PHONY: agent
 agent:
 	docker build ./agent/ -t agent
 	docker run --rm -it \
@@ -19,7 +20,19 @@ install:
 	pnpm install
 
 start:
-	pnpm tsx src/index.tsx
+	pnpm exec tsx src/index.tsx
 
 build:
-	pnpm tsc -p .
+	pnpm exec tsc -p .
+
+lint:
+	pnpm exec eslint .
+
+lint-fix:
+	pnpm exec eslint . --fix
+
+format:
+	pnpm exec prettier . --write
+
+format-check:
+	pnpm exec prettier . --check

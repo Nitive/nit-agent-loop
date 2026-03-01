@@ -1,0 +1,7 @@
+dist
+node_modules
+.codex
+.pnpm-store
+pnpm-lock.yaml
+agent/.codex
+agent/.agents
