@@ -22,6 +22,7 @@
 
 ## Coding Style & Naming Conventions
 
+- Try to make code as simple and possible, you can make extra effort to do so
 - Follow `.editorconfig`: 2-space indentation, LF line endings, UTF-8, trim trailing whitespace (except Markdown), and final newline.
 - Use TypeScript + ESM modules (`"type": "module"`).
 - Linting uses ESLint flat config (`eslint.config.js`) with TypeScript + Node globals.
