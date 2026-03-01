@@ -1,4 +1,4 @@
-import fs from "node:fs"
+import fsp from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
@@ -6,15 +6,15 @@ import { getMetaValue, openDatabase, setMetaValue } from "../db/database.js"
 
 const tempDirs: string[] = []
 
-afterEach(() => {
+afterEach(async () => {
   for (const dir of tempDirs.splice(0)) {
-    fs.rmSync(dir, { recursive: true, force: true })
+    await fsp.rm(dir, { recursive: true, force: true })
   }
 })
 
 describe("database metadata", () => {
-  it("stores and reads values from an isolated sqlite file", () => {
-    const tempDir = fs.mkdtempSync(
+  it("stores and reads values from an isolated sqlite file", async () => {
+    const tempDir = await fsp.mkdtemp(
       path.join(os.tmpdir(), "nit-agent-loop-test-"),
     )
     tempDirs.push(tempDir)

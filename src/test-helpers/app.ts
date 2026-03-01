@@ -1,18 +1,24 @@
 import { FetchMock, defaultFetchMockConfig } from "fetch-mock"
-import fs from "node:fs"
+import fsp from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import { render } from "ink-testing-library"
 import { createElement } from "react"
 import { AppWithContext } from "../app.js"
-import { openDatabase, savePlaneConfig } from "../db/database.js"
+import {
+  createAppContextValue,
+  createManagedDatabase,
+} from "../utils/appContext.js"
 import { cleanupAfterEach } from "./cleanup.js"
+import {
+  sleep,
+  waitForStableFrame,
+  type WaitForStableFrameOptions,
+  writeInput,
+} from "./wait.js"
 
 type CreateTestAppOptions = {
-  planeConfig?: {
-    workspaceUrl: string
-    token: string
-  }
+  path?: string
 }
 
 export async function createTestApp(options: CreateTestAppOptions = {}) {
@@ -23,38 +29,62 @@ export async function createTestApp(options: CreateTestAppOptions = {}) {
     fetchMock.hardReset()
   })
 
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "nit-agent-loop-test-"))
-  const databasePath = path.join(tempDir, "app.sqlite")
-  const database = openDatabase(databasePath)
+  const tempDir =
+    options.path ??
+    (await fsp.mkdtemp(path.join(os.tmpdir(), "nit-agent-loop-test-")))
 
-  if (options.planeConfig) {
-    savePlaneConfig(database, options.planeConfig)
+  async function cleanupTestDir() {
+    await fsp.rm(tempDir, { recursive: true, force: true })
   }
 
-  cleanupAfterEach.addCleanupStep(() => {
-    database.close()
-    fs.rmSync(tempDir, { recursive: true, force: true })
-  })
+  const databasePath = path.join(tempDir, "app.sqlite")
+
+  await fsp.mkdir(tempDir, { recursive: true })
+  const managedDatabase = createManagedDatabase(databasePath)
+  const { database } = managedDatabase
 
   const app = render(
     createElement(AppWithContext, {
-      context: {
+      context: createAppContextValue({
         database,
         fetch,
         useExit: () => {},
-      },
+      }),
     }),
   )
 
-  cleanupAfterEach.addCleanupStep(() => {
+  let isDestroyed = false
+  const destroy = async (opts: { keepFiles?: boolean } = {}) => {
+    if (isDestroyed) {
+      return
+    }
+
+    isDestroyed = true
     app.cleanup()
+    managedDatabase.close()
+    if (!opts.keepFiles) {
+      await cleanupTestDir()
+    }
+  }
+
+  cleanupAfterEach.addCleanupStep(async () => {
+    await destroy()
+    await cleanupTestDir()
   })
 
   return {
     app,
     database,
-    databasePath,
+    destroy,
+    tempDir,
     fetch,
     fetchMock,
+    lastFrame: () => app.lastFrame() ?? "",
+    sleep,
+    waitForStableFrame: (options?: WaitForStableFrameOptions) =>
+      waitForStableFrame(app, options),
+    writeInput: (value: string, stableFrames?: number) =>
+      writeInput(app, value, stableFrames),
+    write: (value: string) => app.stdin.write(value),
   }
 }

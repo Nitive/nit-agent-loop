@@ -1,8 +1,7 @@
-import fs from "node:fs"
 import path from "node:path"
 import { DatabaseSync } from "node:sqlite"
 
-const defaultDataDir = path.resolve(process.cwd(), "data")
+export const defaultDataDir = path.resolve(process.cwd(), "data")
 export const defaultDatabasePath = path.join(defaultDataDir, "app.sqlite")
 
 const planeWorkspaceUrlKey = "plane.workspace_url"
@@ -14,8 +13,6 @@ export type PlaneConfig = {
 }
 
 export const openDatabase = (databasePath = defaultDatabasePath) => {
-  fs.mkdirSync(path.dirname(databasePath), { recursive: true })
-
   const database = new DatabaseSync(databasePath)
 
   database.exec(`

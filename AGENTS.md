@@ -29,6 +29,8 @@
 - Use TypeScript + ESM modules (`"type": "module"`).
 - Linting uses ESLint flat config (`eslint.config.js`) with TypeScript + Node globals.
 - Formatting uses Prettier with trailing commas (`.prettierrc.json`).
+- Use async filesystem APIs via `import fsp from "node:fs/promises"`; avoid Node.js sync FS APIs (`*Sync`).
+- Create required data directories asynchronously at startup (before opening SQLite files).
 - For terminal inspection, prefer `batcat` for file views and `delta` for diff output.
 - When showing diffs in terminal, render raw `delta` output (do not strip ANSI sequences). When pasting diffs into chat, use `delta --color-only` for readable text.
 - Skills for the agent environment are committed under `agent/.agents/skills/` to keep developer setup consistent; `skills-lock.json` is metadata for source/version tracking.
@@ -41,6 +43,10 @@
 - Use `ink-testing-library` for Ink UI behavior and `fetch-mock` for HTTP mocking.
 - Put tests under `src/**/__tests__` or as `*.test.ts(x)` near the code under test.
 - Keep tests isolated: use temporary directories/files for SQLite-backed flows.
+- Prefer `createTestApp({ path, skipCleanup? })` for app integration tests; do not pass a separate `databasePath`.
+- Cleanup is enabled by default in test helpers and is always enforced by `cleanupAfterEach`; use `skipCleanup: true` only when you explicitly need to inspect artifacts.
+- For Ink assertions, wait for render stabilization with `waitForStableFrame()` and assert using `test(frame) { ... }` to avoid race-prone fixed sleeps.
+- Use `writeInput(...)` helper for key input in tests so each input waits for the next stable frame.
 - At minimum, verify startup, signal handling, config persistence, and clean exit behavior for CLI flows.
 
 ## Commit & Pull Request Guidelines
