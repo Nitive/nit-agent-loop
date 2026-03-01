@@ -1,5 +1,4 @@
 FROM node:24
-WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates git openssl ripgrep jq yq bash curl less openssh-client sudo
@@ -17,5 +16,6 @@ RUN userdel node && \
 
 
 USER 1000:1000
+WORKDIR /app
 
 ENTRYPOINT ["codex"]

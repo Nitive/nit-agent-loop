@@ -1,11 +1,6 @@
+# Mostly safe in docker, only network access is allowed
+# TODO: use external solution to limit network access for container
+sandbox_mode = "danger-full-access"
+
 [projects."/app"]
 trust_level = "trusted"
-
-[sandbox_workspace_write]
-network_access = true
-writable_roots = ["/"]
-
-[permissions.network]
-enabled = true
-mode = "limited"
-allowed_domains = ["registry.npmjs.org", "raw.githubusercontent.com", "github.com"]
