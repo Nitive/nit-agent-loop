@@ -7,4 +7,4 @@ const App = () => {
   return <Text color="green">Hello world</Text>
 }
 
-render(<App />, { exitOnCtrlC: true })
+render(<App />)
