@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "ink-tui": {
+      "source": "justinlevinedotme/jalco-opencode",
+      "sourceType": "github",
+      "computedHash": "6125ef3695db25bb4d6342eced98962c09f46c5aabfcc2bd6bbf6b49b3128824"
+    }
+  }
+}
