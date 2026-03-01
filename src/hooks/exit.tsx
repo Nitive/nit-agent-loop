@@ -25,25 +25,18 @@ export const useExitHandlers = (onExit?: () => void) => {
   })
 
   useEffect(() => {
-    const handleSignal = () => {
-      exitWithCleanup()
-    }
-    const handleStdinEnd = () => {
-      exitWithCleanup()
-    }
-
     for (const signal of exitSignals) {
-      process.once(signal, handleSignal)
+      process.once(signal, exitWithCleanup)
     }
-    process.stdin.once("end", handleStdinEnd)
-    process.stdin.once("close", handleStdinEnd)
+    process.stdin.once("end", exitWithCleanup)
+    process.stdin.once("close", exitWithCleanup)
 
     return () => {
       for (const signal of exitSignals) {
-        process.removeListener(signal, handleSignal)
+        process.removeListener(signal, exitWithCleanup)
       }
-      process.stdin.removeListener("end", handleStdinEnd)
-      process.stdin.removeListener("close", handleStdinEnd)
+      process.stdin.removeListener("end", exitWithCleanup)
+      process.stdin.removeListener("close", exitWithCleanup)
     }
   }, [exitWithCleanup])
 
