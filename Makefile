@@ -14,3 +14,12 @@ agent:
 
 attach:
 	docker exec -it $(container_name) bash
+
+install:
+	pnpm install
+
+start:
+	pnpm tsx src/index.tsx
+
+build:
+	pnpm tsc -p .
