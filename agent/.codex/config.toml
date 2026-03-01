@@ -1,6 +1,11 @@
 # Mostly safe in docker, only network access is allowed
 # TODO: use external solution to limit network access for container
 sandbox_mode = "danger-full-access"
+model = "gpt-5.3-codex"
+model_reasoning_effort = "xhigh"
 
 [projects."/app"]
 trust_level = "trusted"
+
+[tui]
+status_line = ["model-with-reasoning", "context-remaining", "current-dir", "five-hour-limit", "weekly-limit"]
