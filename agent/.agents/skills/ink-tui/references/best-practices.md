@@ -12,10 +12,11 @@ npx create-ink-app --typescript my-cli
 // tsconfig.json
 {
   "compilerOptions": {
-    "jsx": "react",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "target": "ES2020"
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "jsx": "react-jsx"
   }
 }
 ```
@@ -26,15 +27,17 @@ npx create-ink-app --typescript my-cli
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "dev": "node --watch dist/cli.js"
+    "dev": "tsx src/index.tsx",
+    "test": "vitest"
   },
   "dependencies": {
     "ink": "^5.0.0",
-    "react": "^18.0.0"
+    "react": "^19.0.0"
   },
   "devDependencies": {
-    "@types/react": "^18.0.0",
-    "typescript": "^5.0.0"
+    "@types/react": "^19.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
   }
 }
 ```
@@ -45,13 +48,14 @@ npx create-ink-app --typescript my-cli
 
 ### Single Entry Point
 ```tsx
-// cli.tsx
+// src/index.tsx
 import {render} from 'ink';
 import {App} from './app.js';
 
 render(<App />, {
   exitOnCtrlC: true,
   patchConsole: true,
+  incrementalRendering: true, // minimize flicker on updates/resize
 });
 ```
 
@@ -328,7 +332,8 @@ const App = () => {
 
 ```tsx
 import {render} from 'ink-testing-library';
-import {act} from 'react-dom/test-utils';
+import {expect, test} from 'vitest';
+import {act} from 'react'; // React 19+ exports act directly
 
 test('renders correctly', () => {
   const {lastFrame} = render(<MyComponent />);
@@ -338,15 +343,21 @@ test('renders correctly', () => {
 test('handles input', async () => {
   const {lastFrame, stdin} = render(<Counter />);
   expect(lastFrame()).toContain('0');
-  stdin.write('j');  // simulate keypress
+  
+  await act(async () => {
+    stdin.write('j'); // simulate keypress
+  });
+  
   expect(lastFrame()).toContain('1');
 });
 
 test('async component', async () => {
   const {lastFrame} = render(<AsyncComponent />);
+  
   await act(async () => {
     await new Promise(resolve => setTimeout(resolve, 100));
   });
+  
   expect(lastFrame()).toContain('Loaded');
 });
 ```

@@ -32,9 +32,9 @@ Used by Claude Code, Gemini CLI, Cloudflare Wrangler, Shopify CLI, Prisma, and m
 ## Quick Start
 
 ```sh
+pnpm add ink react @types/react
+# or scaffold a new project:
 npx create-ink-app --typescript my-cli
-# or manually:
-npm install ink react @types/react
 ```
 
 ```tsx
@@ -91,20 +91,20 @@ render(<App />);
 
 ### 1. Assess the TUI type needed
 - **Static output** (progress, logs): use `<Static>` + simple state
-- **Interactive menu**: use `ink-select-input` or `@inkjs/ui Select`
-- **Form**: use `ink-form` or `@inkjs/ui TextInput`
+- **Interactive menu**: use `@inkjs/ui Select` (primary) or `ink-select-input`
+- **Form**: use `@inkjs/ui TextInput` (primary) or `ink-form`
 - **Dashboard**: compose `<Box>` layout + `ink-use-stdout-dimensions`
-- **Multi-screen**: use screen state + `useInput` for navigation
+- **Multi-screen**: use `react-router` (MemoryRouter) or screen state + `useInput`
 
 ### 2. Choose components from ecosystem
 Consult `references/ecosystem-components.md` for the right package.
-Prefer `@inkjs/ui` for standard inputs — it's the official library.
+**MANDATORY**: Prefer `@inkjs/ui` for all standard inputs (Select, TextInput, Confirm, etc.) — it is the official library and ensures visual consistency.
 
 ### 3. Structure the app
 ```
 src/
-  cli.tsx          ← render() entry point
-  app.tsx          ← root App component (handles global input)
+  index.tsx        ← render() entry point
+  app.tsx          ← root App component (providers & layout)
   components/      ← reusable UI components
   screens/         ← top-level screen components
 ```
@@ -114,9 +114,9 @@ src/
 - Always guard `setRawMode` with `isRawModeSupported`
 - Clean up all timers and listeners in `useEffect` return
 
-### 5. Performance
+### 5. Performance & Polish
 - Use `<Static>` for completed/immutable output — never re-renders
-- Set `incrementalRendering: true` for frequently updating UIs
+- Set `incrementalRendering: true` to minimize flicker during updates and terminal resizes
 - Use `ink-virtual-list` for lists with 100+ items
 - Batch state updates to minimize re-renders
 

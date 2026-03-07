@@ -376,17 +376,23 @@ stdin.write('q');  // simulate input
 
 ## Routing
 
-Use React Router's `MemoryRouter` for multi-screen TUIs:
+Use React Router's `MemoryRouter` for complex multi-screen TUIs (v7+).
 
 ```tsx
-import {MemoryRouter, Route, Switch, useHistory} from 'react-router-dom';
+import {MemoryRouter, Routes, Route} from 'react-router';
 
-render(
-  <MemoryRouter>
-    <Switch>
-      <Route exact path="/" component={HomeScreen} />
-      <Route path="/details" component={DetailScreen} />
-    </Switch>
+const App = () => (
+  <MemoryRouter initialEntries={['/']}>
+    <Routes>
+      <Route path="/" element={<HomeScreen />} />
+      <Route path="/details" element={<DetailScreen />} />
+      <Route path="/settings" element={<SettingsScreen />} />
+    </Routes>
   </MemoryRouter>
 );
+
+// In components, use standard hooks
+import {useNavigate} from 'react-router';
+const navigate = useNavigate();
+navigate('/details');
 ```
