@@ -1,0 +1,4 @@
+interface:
+  display_name: "Plane Agent Apps"
+  short_description: "Build Plane agent apps with OAuth and webhooks."
+  default_prompt: "Build or update a Plane agent app with OAuth setup, webhook verification, and agent run activity handling."
