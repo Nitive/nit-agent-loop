@@ -1,4 +1,5 @@
 import process from "node:process"
+import { PlaneClient, type Project } from "@makeplane/plane-node-sdk"
 import { Box, Text, useApp, useInput } from "ink"
 import { useEffect, useMemo, useState } from "react"
 import {
@@ -14,22 +15,43 @@ import {
   type PlaneConfig,
 } from "../db/database.js"
 import { useAppContext } from "../hooks/app-context.js"
-import { PlaneClient, type PlaneProject } from "../task-manager/plane/client.js"
+import { PlaneContext, type PlaneContextValue, usePlane } from "../hooks/plane.js"
 import { PlaneConfigScreen } from "./plane-config.js"
+
+type WorkspaceInfo = {
+  origin: string
+  slug: string
+}
+
+const getWorkspaceInfo = (workspaceUrl: string): WorkspaceInfo | null => {
+  try {
+    const url = new URL(workspaceUrl)
+    const slug = url.pathname.split("/").filter(Boolean)[0]
+    if (!slug) {
+      return null
+    }
+
+    return {
+      origin: url.origin,
+      slug,
+    }
+  } catch {
+    return null
+  }
+}
 
 const MainScreen = ({
   width,
   height,
   onExit,
-  planeClient,
 }: {
   width: number
   height: number
   onExit: () => void
-  planeClient: PlaneClient
 }) => {
   const navigate = useNavigate()
-  const [projects, setProjects] = useState<PlaneProject[]>([])
+  const { client, workspaceSlug } = usePlane()
+  const [projects, setProjects] = useState<Project[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -41,7 +63,16 @@ const MainScreen = ({
       setLoadError(null)
 
       try {
-        const nextProjects = await planeClient.listProjects()
+        if (!workspaceSlug) {
+          throw new Error(
+            "Plane workspace URL must include workspace slug (for example: https://app.plane.so/my-team).",
+          )
+        }
+
+        const response = await client.projects.list(workspaceSlug)
+        const nextProjects = Array.isArray(response.results)
+          ? response.results
+          : []
         if (!isActive) {
           return
         }
@@ -70,7 +101,7 @@ const MainScreen = ({
     return () => {
       isActive = false
     }
-  }, [planeClient])
+  }, [client, workspaceSlug])
 
   useInput((input) => {
     if (input === "q") {
@@ -161,10 +192,8 @@ const ConfigScreen = ({
 
 export const AppView = () => {
   const { exit } = useApp()
-  const context = useAppContext()
-  const { database, useExit } = context
+  const { database, useExit } = useAppContext()
   useExit()
-  const planeClient = useMemo(() => new PlaneClient(context), [context])
 
   const [planeConfig, setPlaneConfig] = useState<PlaneConfig>(() =>
     getPlaneConfig(database),
@@ -173,6 +202,21 @@ export const AppView = () => {
 
   const width = process.stdout.columns || 80
   const height = process.stdout.rows || 24
+  const plane = useMemo<PlaneContextValue | null>(() => {
+    if (!planeConfig.workspaceUrl || !planeConfig.token) {
+      return null
+    }
+
+    const workspaceInfo = getWorkspaceInfo(planeConfig.workspaceUrl)
+
+    return {
+      client: new PlaneClient({
+        baseUrl: workspaceInfo?.origin ?? "https://api.plane.so",
+        apiKey: planeConfig.token,
+      }),
+      workspaceSlug: workspaceInfo?.slug ?? null,
+    }
+  }, [planeConfig.workspaceUrl, planeConfig.token])
 
   return (
     <MemoryRouter initialEntries={[setupRequired ? "/config" : "/"]}>
@@ -180,12 +224,13 @@ export const AppView = () => {
         <Route
           path="/"
           element={
-            <MainScreen
-              width={width}
-              height={height}
-              onExit={exit}
-              planeClient={planeClient}
-            />
+            plane === null ? (
+              <Navigate to="/config" replace />
+            ) : (
+              <PlaneContext.Provider value={plane}>
+                <MainScreen width={width} height={height} onExit={exit} />
+              </PlaneContext.Provider>
+            )
           }
         />
         <Route

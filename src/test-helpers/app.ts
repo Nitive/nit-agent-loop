@@ -1,5 +1,7 @@
+import AxiosMockAdapter from "axios-mock-adapter"
 import { FetchMock, defaultFetchMockConfig } from "fetch-mock"
 import fsp from "node:fs/promises"
+import { createRequire } from "node:module"
 import os from "node:os"
 import path from "node:path"
 import { render } from "ink-testing-library"
@@ -22,8 +24,19 @@ type CreateTestAppOptions = {
 }
 
 export async function createTestApp(options: CreateTestAppOptions = {}) {
+  const requireFromHere = createRequire(import.meta.url)
+  const planeSdkRequire = createRequire(
+    requireFromHere.resolve("@makeplane/plane-node-sdk/dist/api/BaseResource.js"),
+  )
+  const planeSdkAxios = planeSdkRequire("axios") as import("axios").AxiosStatic
+  const axiosMock = new AxiosMockAdapter(planeSdkAxios)
   const fetchMock = new FetchMock(defaultFetchMockConfig)
   const fetch: typeof globalThis.fetch = fetchMock.fetchHandler
+
+  cleanupAfterEach.addCleanupStep(() => {
+    axiosMock.reset()
+    axiosMock.restore()
+  })
 
   cleanupAfterEach.addCleanupStep(() => {
     fetchMock.hardReset()
@@ -79,6 +92,7 @@ export async function createTestApp(options: CreateTestAppOptions = {}) {
     tempDir,
     fetch,
     fetchMock,
+    axiosMock,
     lastFrame: () => app.lastFrame() ?? "",
     sleep,
     waitForStableFrame: (options?: WaitForStableFrameOptions) =>
