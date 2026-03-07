@@ -12,7 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -f /tmp/git-delta.deb
 
 RUN corepack enable
-RUN npm install -g @openai/codex
+
+ARG CODEX_VERSION=^0.111.0
+RUN npm install -g @openai/codex@$CODEX_VERSION
 
 ENV PNPM_HOME=/tmp/pnpm
 ENV PATH="$PATH:/tmp/pnpm"

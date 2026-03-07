@@ -5,7 +5,7 @@ CODEX_SESSION_NAME ?= main
 
 agent:
 	mkdir -p ./agent/tmp ./agent/.codex ./agent/.agents
-	docker build ./agent/ -t agent
+	docker build ./agent/ -t agent --build-arg=CODEX_VERSION="$$(pnpm info @openai/codex --json | jq -r .version)"
 	docker run --rm -it \
 	  --name $(container_name) \
 	  -e CODEX_SESSION_NAME="$(CODEX_SESSION_NAME)" \
