@@ -29,7 +29,7 @@ describe("app config flow", () => {
     await t2.waitForStableFrame({
       test(frame) {
         expect(frame).toContain("q:Quit c:Config")
-        expect(frame).toContain("hello")
+        expect(frame).toContain("Plane Projects")
         expect(frame).toContain("(world)")
       },
     })

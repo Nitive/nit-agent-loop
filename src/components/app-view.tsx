@@ -1,6 +1,6 @@
 import process from "node:process"
 import { Box, Text, useApp, useInput } from "ink"
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   MemoryRouter,
   Navigate,
@@ -14,18 +14,63 @@ import {
   type PlaneConfig,
 } from "../db/database.js"
 import { useAppContext } from "../hooks/app-context.js"
+import { PlaneClient, type PlaneProject } from "../task-manager/plane/client.js"
 import { PlaneConfigScreen } from "./plane-config.js"
 
 const MainScreen = ({
   width,
   height,
   onExit,
+  planeClient,
 }: {
   width: number
   height: number
   onExit: () => void
+  planeClient: PlaneClient
 }) => {
   const navigate = useNavigate()
+  const [projects, setProjects] = useState<PlaneProject[]>([])
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    let isActive = true
+
+    const loadProjects = async () => {
+      setIsLoading(true)
+      setLoadError(null)
+
+      try {
+        const nextProjects = await planeClient.listProjects()
+        if (!isActive) {
+          return
+        }
+
+        setProjects(nextProjects)
+      } catch (error) {
+        if (!isActive) {
+          return
+        }
+
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Unable to load Plane projects."
+        setLoadError(message)
+        setProjects([])
+      } finally {
+        if (isActive) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    loadProjects()
+
+    return () => {
+      isActive = false
+    }
+  }, [planeClient])
 
   useInput((input) => {
     if (input === "q") {
@@ -45,10 +90,24 @@ const MainScreen = ({
           width="50%"
           height="100%"
           borderStyle="single"
-          justifyContent="center"
-          alignItems="center"
+          flexDirection="column"
+          padding={1}
         >
-          <Text>hello</Text>
+          <Text color="cyan">Plane Projects</Text>
+          {isLoading ? <Text dimColor>Loading projects...</Text> : null}
+          {loadError ? <Text color="red">{loadError}</Text> : null}
+          {!isLoading && !loadError && projects.length === 0 ? (
+            <Text dimColor>No projects found.</Text>
+          ) : null}
+          {!isLoading && !loadError
+            ? projects.map((project) => (
+                <Text key={project.id}>
+                  {project.identifier
+                    ? `${project.identifier}: ${project.name}`
+                    : project.name}
+                </Text>
+              ))
+            : null}
         </Box>
         <Box
           width="50%"
@@ -102,8 +161,10 @@ const ConfigScreen = ({
 
 export const AppView = () => {
   const { exit } = useApp()
-  const { database, useExit } = useAppContext()
+  const context = useAppContext()
+  const { database, useExit } = context
   useExit()
+  const planeClient = useMemo(() => new PlaneClient(context), [context])
 
   const [planeConfig, setPlaneConfig] = useState<PlaneConfig>(() =>
     getPlaneConfig(database),
@@ -118,7 +179,14 @@ export const AppView = () => {
       <Routes>
         <Route
           path="/"
-          element={<MainScreen width={width} height={height} onExit={exit} />}
+          element={
+            <MainScreen
+              width={width}
+              height={height}
+              onExit={exit}
+              planeClient={planeClient}
+            />
+          }
         />
         <Route
           path="/config"
