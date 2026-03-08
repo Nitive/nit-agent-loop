@@ -1,4 +1,18 @@
 services:
+  squid:
+    container_name: ${CONTAINER_NAME:-agent}-squid
+    build:
+      context: ./agent/squid
+    networks:
+      - agent-internal
+      - agent-egress
+    healthcheck:
+      test: ["CMD-SHELL", "test -s /run/squid/squid.pid && squid -k check"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   agent:
     container_name: ${CONTAINER_NAME:-agent}
     build:
@@ -6,15 +20,28 @@ services:
       args:
         USER_ID: ${USER_ID:-1000}
         GROUP_ID: ${GROUP_ID:-1000}
+    depends_on:
+      squid:
+        condition: service_healthy
+    environment:
+      HTTP_PROXY: http://squid:3128
+      HTTPS_PROXY: http://squid:3128
+      ALL_PROXY: http://squid:3128
+      NO_PROXY: localhost,127.0.0.1,squid
+      http_proxy: http://squid:3128
+      https_proxy: http://squid:3128
+      all_proxy: http://squid:3128
+      no_proxy: localhost,127.0.0.1,squid
     stdin_open: true
     tty: true
-    ports:
-      - "127.0.0.1:2255:22"
+    networks:
+      - agent-internal
     volumes:
       - .:/app
       - agent-tmp:/tmp
       - agent-home:/home/ubuntu
       - ./agent/.ssh:/home/ubuntu/.ssh
+      - ./agent/.sock:/run/agent-sock
       - ./agent/.codex/config.toml:/home/ubuntu/.codex/config.toml
       - ./agent/.agents:/home/ubuntu/.agents
       - ${HOST_CODEX_AUTH}:/home/ubuntu/.codex/auth.json:ro
@@ -26,3 +53,10 @@ volumes:
     name: ${CONTAINER_NAME:-agent}-tmp
   agent-home:
     name: ${CONTAINER_NAME:-agent}-home
+
+networks:
+  agent-internal:
+    name: ${CONTAINER_NAME:-agent}-internal
+    internal: true
+  agent-egress:
+    name: ${CONTAINER_NAME:-agent}-egress

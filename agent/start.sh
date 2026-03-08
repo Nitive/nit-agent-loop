@@ -48,13 +48,32 @@ if [ ! -f ~/.ssh/authorized_keys ]; then
 fi
 
 cat <<EOF > ~/.ssh/container-known-hosts
-[127.0.0.1]:2255 $(cat /etc/ssh/ssh_host_ed25519_key.pub)
+agent-unix $(cat /etc/ssh/ssh_host_ed25519_key.pub)
 EOF
 
 sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
+if ! grep -q '^ListenAddress 127.0.0.1$' /etc/ssh/sshd_config; then
+  echo 'ListenAddress 127.0.0.1' | sudo tee -a /etc/ssh/sshd_config > /dev/null
+fi
 
 sudo mkdir -p /run/sshd
 sudo /usr/sbin/sshd
+
+socket_path="/run/agent-sock/ssh.sock"
+mkdir -p "$(dirname "$socket_path")"
+rm -f "$socket_path"
+socat UNIX-LISTEN:"$socket_path",fork,unlink-early,mode=600 TCP:127.0.0.1:22 &
+
+for _ in $(seq 1 50); do
+  if [ -S "$socket_path" ]; then
+    break
+  fi
+  sleep 0.1
+done
+if [ ! -S "$socket_path" ]; then
+  echo "Failed to create SSH unix socket at $socket_path" >&2
+  exit 1
+fi
 
 exec node -e "
 import fs from 'node:fs'

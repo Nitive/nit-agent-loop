@@ -1,0 +1,13 @@
+.chatgpt.com
+.openai.com
+.github.com
+.githubusercontent.com
+.npmjs.org
+.registry.npmjs.org
+.nodejs.org
+.pypi.org
+.pythonhosted.org
+.mise.jdx.dev
+.ubuntu.com
+.archive.ubuntu.com
+.security.ubuntu.com

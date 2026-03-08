@@ -6,7 +6,7 @@ ARG DELTA_VERSION=0.18.2
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ca-certificates git openssl ripgrep jq yq bash curl less openssh-client \
-    openssh-server sudo bat kitty kitty-terminfo vim
+    openssh-server sudo bat kitty kitty-terminfo vim socat
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000
