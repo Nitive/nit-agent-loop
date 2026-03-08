@@ -1,0 +1,28 @@
+services:
+  agent:
+    container_name: ${CONTAINER_NAME:-agent}
+    build:
+      context: ./agent
+      args:
+        USER_ID: ${USER_ID:-1000}
+        GROUP_ID: ${GROUP_ID:-1000}
+    stdin_open: true
+    tty: true
+    ports:
+      - "127.0.0.1:2255:22"
+    volumes:
+      - .:/app
+      - agent-tmp:/tmp
+      - agent-home:/home/ubuntu
+      - ./agent/.ssh:/home/ubuntu/.ssh
+      - ./agent/.codex/config.toml:/home/ubuntu/.codex/config.toml
+      - ./agent/.agents:/home/ubuntu/.agents
+      - ${HOST_CODEX_AUTH}:/home/ubuntu/.codex/auth.json:ro
+    cpus: 4
+    mem_limit: 5g
+
+volumes:
+  agent-tmp:
+    name: ${CONTAINER_NAME:-agent}-tmp
+  agent-home:
+    name: ${CONTAINER_NAME:-agent}-home
