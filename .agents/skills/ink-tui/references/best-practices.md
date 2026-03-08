@@ -3,11 +3,13 @@
 ## Project Setup
 
 ### TypeScript (Recommended)
+
 ```sh
 npx create-ink-app --typescript my-cli
 ```
 
 ### Manual TypeScript Setup
+
 ```json
 // tsconfig.json
 {
@@ -22,6 +24,7 @@ npx create-ink-app --typescript my-cli
 ```
 
 ### ESM + TypeScript (`package.json`)
+
 ```json
 {
   "type": "module",
@@ -47,38 +50,41 @@ npx create-ink-app --typescript my-cli
 ## Architecture Patterns
 
 ### Single Entry Point
+
 ```tsx
 // src/index.tsx
-import {render} from 'ink';
-import {App} from './app.js';
+import { render } from "ink"
+import { App } from "./app.js"
 
 render(<App />, {
   exitOnCtrlC: true,
   patchConsole: true,
   incrementalRendering: true, // minimize flicker on updates/resize
-});
+})
 ```
 
 ### Async Exit Pattern
+
 ```tsx
-const {waitUntilExit} = render(<App />);
-await waitUntilExit();
-process.exit(0);
+const { waitUntilExit } = render(<App />)
+await waitUntilExit()
+process.exit(0)
 ```
 
 ### Error Handling
+
 ```tsx
 const App = () => {
-  const {exit} = useApp();
+  const { exit } = useApp()
 
   useEffect(() => {
-    const handleError = (err: Error) => exit(err);
-    process.on('uncaughtException', handleError);
-    return () => process.off('uncaughtException', handleError);
-  }, []);
+    const handleError = (err: Error) => exit(err)
+    process.on("uncaughtException", handleError)
+    return () => process.off("uncaughtException", handleError)
+  }, [])
 
-  return <MainUI />;
-};
+  return <MainUI />
+}
 ```
 
 ---
@@ -86,9 +92,10 @@ const App = () => {
 ## Layout Patterns
 
 ### Full-Screen App
+
 ```tsx
 const App = () => {
-  const [cols, rows] = useStdoutDimensions(); // ink-use-stdout-dimensions
+  const [cols, rows] = useStdoutDimensions() // ink-use-stdout-dimensions
 
   return (
     <Box width={cols} height={rows} flexDirection="column">
@@ -98,11 +105,12 @@ const App = () => {
       </Box>
       <StatusBar />
     </Box>
-  );
-};
+  )
+}
 ```
 
 ### Split Pane
+
 ```tsx
 <Box flexDirection="row" gap={1}>
   <Box width="30%" flexDirection="column">
@@ -115,6 +123,7 @@ const App = () => {
 ```
 
 ### Centered Content
+
 ```tsx
 <Box justifyContent="center" alignItems="center" height={10}>
   <Text>Centered</Text>
@@ -122,9 +131,17 @@ const App = () => {
 ```
 
 ### Status Bar
+
 ```tsx
-<Box justifyContent="space-between" borderStyle="single" borderTop borderBottom={false} borderLeft={false} borderRight={false}>
-  <Text dimColor>q: quit  ↑↓: navigate  enter: select</Text>
+<Box
+  justifyContent="space-between"
+  borderStyle="single"
+  borderTop
+  borderBottom={false}
+  borderLeft={false}
+  borderRight={false}
+>
+  <Text dimColor>q: quit ↑↓: navigate enter: select</Text>
   <Text>{status}</Text>
 </Box>
 ```
@@ -134,68 +151,77 @@ const App = () => {
 ## Input Handling Patterns
 
 ### Global Keyboard Router
+
 ```tsx
 const App = () => {
-  const {exit} = useApp();
+  const { exit } = useApp()
 
   useInput((input, key) => {
     // Global shortcuts always handled
-    if (input === 'q' || (key.ctrl && input === 'c')) {
-      exit();
+    if (input === "q" || (key.ctrl && input === "c")) {
+      exit()
     }
-  });
+  })
 
-  return <Screen />;
-};
+  return <Screen />
+}
 ```
 
 ### Conditional Input (Active Panel Only)
-```tsx
-const Panel = ({isActive}: {isActive: boolean}) => {
-  useInput((input, key) => {
-    if (key.upArrow) navigate(-1);
-    if (key.downArrow) navigate(1);
-    if (key.return) select();
-  }, {isActive}); // Only fires when isActive=true
 
-  return <Box>...</Box>;
-};
+```tsx
+const Panel = ({ isActive }: { isActive: boolean }) => {
+  useInput(
+    (input, key) => {
+      if (key.upArrow) navigate(-1)
+      if (key.downArrow) navigate(1)
+      if (key.return) select()
+    },
+    { isActive },
+  ) // Only fires when isActive=true
+
+  return <Box>...</Box>
+}
 ```
 
 ### Multi-Screen Navigation
+
 ```tsx
-type Screen = 'list' | 'detail' | 'confirm';
+type Screen = "list" | "detail" | "confirm"
 
 const App = () => {
-  const [screen, setScreen] = useState<Screen>('list');
-  const {exit} = useApp();
+  const [screen, setScreen] = useState<Screen>("list")
+  const { exit } = useApp()
 
   useInput((input, key) => {
     if (key.escape) {
-      if (screen !== 'list') setScreen('list');
-      else exit();
+      if (screen !== "list") setScreen("list")
+      else exit()
     }
-  });
+  })
 
-  if (screen === 'list') return <ListScreen onSelect={() => setScreen('detail')} />;
-  if (screen === 'detail') return <DetailScreen onBack={() => setScreen('list')} />;
-  return null;
-};
+  if (screen === "list")
+    return <ListScreen onSelect={() => setScreen("detail")} />
+  if (screen === "detail")
+    return <DetailScreen onBack={() => setScreen("list")} />
+  return null
+}
 ```
 
 ### Arrow Key List Navigation
+
 ```tsx
 const useListNav = (items: unknown[], onSelect: (i: number) => void) => {
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(0)
 
   useInput((input, key) => {
-    if (key.upArrow) setIndex(i => Math.max(0, i - 1));
-    if (key.downArrow) setIndex(i => Math.min(items.length - 1, i + 1));
-    if (key.return) onSelect(index);
-  });
+    if (key.upArrow) setIndex((i) => Math.max(0, i - 1))
+    if (key.downArrow) setIndex((i) => Math.min(items.length - 1, i + 1))
+    if (key.return) onSelect(index)
+  })
 
-  return index;
-};
+  return index
+}
 ```
 
 ---
@@ -203,43 +229,53 @@ const useListNav = (items: unknown[], onSelect: (i: number) => void) => {
 ## State Management Patterns
 
 ### Loading State
+
 ```tsx
 const App = () => {
-  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
-  const [data, setData] = useState(null);
+  const [state, setState] = useState<"loading" | "ready" | "error">("loading")
+  const [data, setData] = useState(null)
 
   useEffect(() => {
     fetchData()
-      .then(d => { setData(d); setState('ready'); })
-      .catch(() => setState('error'));
-  }, []);
+      .then((d) => {
+        setData(d)
+        setState("ready")
+      })
+      .catch(() => setState("error"))
+  }, [])
 
-  if (state === 'loading') return <Text><Spinner /> Loading...</Text>;
-  if (state === 'error') return <Text color="red">Error loading data</Text>;
-  return <DataView data={data} />;
-};
+  if (state === "loading")
+    return (
+      <Text>
+        <Spinner /> Loading...
+      </Text>
+    )
+  if (state === "error") return <Text color="red">Error loading data</Text>
+  return <DataView data={data} />
+}
 ```
 
 ### Async Operations with Progress
+
 ```tsx
 const App = () => {
-  const [progress, setProgress] = useState(0);
-  const [done, setDone] = useState(false);
+  const [progress, setProgress] = useState(0)
+  const [done, setDone] = useState(false)
 
   useEffect(() => {
     const run = async () => {
       for (let i = 0; i <= 100; i += 10) {
-        await doWork(i);
-        setProgress(i);
+        await doWork(i)
+        setProgress(i)
       }
-      setDone(true);
-    };
-    run();
-  }, []);
+      setDone(true)
+    }
+    run()
+  }, [])
 
-  if (done) return <Text color="green">Done!</Text>;
-  return <ProgressBar percent={progress / 100} />;
-};
+  if (done) return <Text color="green">Done!</Text>
+  return <ProgressBar percent={progress / 100} />
+}
 ```
 
 ---
@@ -247,11 +283,12 @@ const App = () => {
 ## Performance Patterns
 
 ### Static for Completed Items (Critical)
+
 ```tsx
 // DO: Use <Static> for completed/immutable output — it doesn't re-render
-<>
+;<>
   <Static items={completedTasks}>
-    {task => (
+    {(task) => (
       <Box key={task.id}>
         <Text color="green">✔ {task.name}</Text>
       </Box>
@@ -263,32 +300,37 @@ const App = () => {
 </>
 
 // DON'T: Re-render everything on every update
-{allTasks.map(t => <Text key={t.id}>{t.name}</Text>)}
+{
+  allTasks.map((t) => <Text key={t.id}>{t.name}</Text>)
+}
 ```
 
 ### Throttle Fast Updates
+
 ```tsx
 // Use maxFps to prevent excessive re-renders
-render(<App />, {maxFps: 15}); // 15fps for heavy UIs
+render(<App />, { maxFps: 15 }) // 15fps for heavy UIs
 
 // For very frequent data updates, batch state
-const [stats, setStats] = useState({cpu: 0, mem: 0});
+const [stats, setStats] = useState({ cpu: 0, mem: 0 })
 // Update both at once, not in separate setState calls
-setStats({cpu: newCpu, mem: newMem});
+setStats({ cpu: newCpu, mem: newMem })
 ```
 
 ### Incremental Rendering for Frequent Updates
+
 ```tsx
-render(<App />, {incrementalRendering: true}); // only redraws changed lines
+render(<App />, { incrementalRendering: true }) // only redraws changed lines
 ```
 
 ### Virtual Lists for Large Datasets
+
 ```tsx
 // Use ink-virtual-list for 100+ items
-import VirtualList from 'ink-virtual-list';
+import VirtualList from "ink-virtual-list"
 
-<VirtualList items={largeArray} itemHeight={1}>
-  {item => <Text key={item.id}>{item.name}</Text>}
+;<VirtualList items={largeArray} itemHeight={1}>
+  {(item) => <Text key={item.id}>{item.name}</Text>}
 </VirtualList>
 ```
 
@@ -297,33 +339,37 @@ import VirtualList from 'ink-virtual-list';
 ## Focus Management
 
 ### Tab-Based Navigation Between Panels
+
 ```tsx
-const Panel = ({id, label}: {id: string; label: string}) => {
-  const {isFocused} = useFocus({id});
+const Panel = ({ id, label }: { id: string; label: string }) => {
+  const { isFocused } = useFocus({ id })
 
   return (
-    <Box borderStyle="single" borderColor={isFocused ? 'blue' : undefined}>
-      <Text>{isFocused ? '▶ ' : '  '}{label}</Text>
+    <Box borderStyle="single" borderColor={isFocused ? "blue" : undefined}>
+      <Text>
+        {isFocused ? "▶ " : "  "}
+        {label}
+      </Text>
     </Box>
-  );
-};
+  )
+}
 
 // Programmatic focus
 const App = () => {
-  const {focus} = useFocusManager();
+  const { focus } = useFocusManager()
 
-  useInput(input => {
-    if (input === '1') focus('panel-1');
-    if (input === '2') focus('panel-2');
-  });
+  useInput((input) => {
+    if (input === "1") focus("panel-1")
+    if (input === "2") focus("panel-2")
+  })
 
   return (
     <>
       <Panel id="panel-1" label="Files" />
       <Panel id="panel-2" label="Preview" />
     </>
-  );
-};
+  )
+}
 ```
 
 ---
@@ -331,35 +377,35 @@ const App = () => {
 ## Testing Patterns
 
 ```tsx
-import {render} from 'ink-testing-library';
-import {expect, test} from 'vitest';
-import {act} from 'react'; // React 19+ exports act directly
+import { render } from "ink-testing-library"
+import { expect, test } from "vitest"
+import { act } from "react" // React 19+ exports act directly
 
-test('renders correctly', () => {
-  const {lastFrame} = render(<MyComponent />);
-  expect(lastFrame()).toBe('Hello World');
-});
+test("renders correctly", () => {
+  const { lastFrame } = render(<MyComponent />)
+  expect(lastFrame()).toBe("Hello World")
+})
 
-test('handles input', async () => {
-  const {lastFrame, stdin} = render(<Counter />);
-  expect(lastFrame()).toContain('0');
-  
+test("handles input", async () => {
+  const { lastFrame, stdin } = render(<Counter />)
+  expect(lastFrame()).toContain("0")
+
   await act(async () => {
-    stdin.write('j'); // simulate keypress
-  });
-  
-  expect(lastFrame()).toContain('1');
-});
+    stdin.write("j") // simulate keypress
+  })
 
-test('async component', async () => {
-  const {lastFrame} = render(<AsyncComponent />);
-  
+  expect(lastFrame()).toContain("1")
+})
+
+test("async component", async () => {
+  const { lastFrame } = render(<AsyncComponent />)
+
   await act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  });
-  
-  expect(lastFrame()).toContain('Loaded');
-});
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  })
+
+  expect(lastFrame()).toContain("Loaded")
+})
 ```
 
 ---
@@ -367,6 +413,7 @@ test('async component', async () => {
 ## Common Pitfalls
 
 ### Text must wrap Text
+
 ```tsx
 // WRONG — Box cannot be inside Text
 <Text><Box>...</Box></Text>
@@ -379,43 +426,47 @@ test('async component', async () => {
 ```
 
 ### measureElement timing
+
 ```tsx
 // WRONG — called during render, returns {0, 0}
-const {width} = measureElement(ref.current); // in render body
+const { width } = measureElement(ref.current) // in render body
 
 // RIGHT — called after layout
 useEffect(() => {
-  const {width, height} = measureElement(ref.current);
-}, [content]); // re-measure when content changes
+  const { width, height } = measureElement(ref.current)
+}, [content]) // re-measure when content changes
 ```
 
 ### Raw mode safety
+
 ```tsx
-const {isRawModeSupported, setRawMode} = useStdin();
+const { isRawModeSupported, setRawMode } = useStdin()
 
 useEffect(() => {
-  if (!isRawModeSupported) return; // guard!
-  setRawMode(true);
-  return () => setRawMode(false); // always cleanup
-}, []);
+  if (!isRawModeSupported) return // guard!
+  setRawMode(true)
+  return () => setRawMode(false) // always cleanup
+}, [])
 ```
 
 ### Avoid console.log (use patchConsole or useStdout)
+
 ```tsx
 // BAD — will fight with Ink's output
-console.log('Debug:', value);
+console.log("Debug:", value)
 
 // GOOD — use patchConsole (default: true) or write to stdout explicitly
-const {write} = useStdout();
-write(`Debug: ${value}\n`);
+const { write } = useStdout()
+write(`Debug: ${value}\n`)
 ```
 
 ### Clean up timers and listeners
+
 ```tsx
 useEffect(() => {
-  const timer = setInterval(tick, 100);
-  return () => clearInterval(timer); // always cleanup
-}, []);
+  const timer = setInterval(tick, 100)
+  return () => clearInterval(timer) // always cleanup
+}, [])
 ```
 
 ---
@@ -424,20 +475,22 @@ useEffect(() => {
 
 ```tsx
 // Provide ARIA roles and labels
-<Box aria-role="progressbar" aria-label={`Progress: ${percent}%`}>
+;<Box aria-role="progressbar" aria-label={`Progress: ${percent}%`}>
   <Box width={`${percent}%`} backgroundColor="green" />
 </Box>
 
 // Screen reader-aware rendering
-const Checkbox = ({checked, label}) => {
-  const isScreenReader = useIsScreenReaderEnabled();
+const Checkbox = ({ checked, label }) => {
+  const isScreenReader = useIsScreenReaderEnabled()
 
   return (
-    <Box aria-role="checkbox" aria-state={{checked}}>
-      <Text>{isScreenReader ? '' : (checked ? '☑' : '☐')} {label}</Text>
+    <Box aria-role="checkbox" aria-state={{ checked }}>
+      <Text>
+        {isScreenReader ? "" : checked ? "☑" : "☐"} {label}
+      </Text>
     </Box>
-  );
-};
+  )
+}
 ```
 
 ---
@@ -446,12 +499,12 @@ const Checkbox = ({checked, label}) => {
 
 ```tsx
 // Detect CI and adjust behavior
-const isCI = process.env.CI === 'true';
+const isCI = process.env.CI === "true"
 
 render(<App />, {
   // In CI, Ink only renders last frame — this is automatic
   // Use Static for progress output that should persist
-});
+})
 ```
 
 Always use `<Static>` for build logs/task output in CI — it ensures output is not overwritten.

@@ -30,9 +30,11 @@ Validated against Plane developer docs on 2026-03-07.
 
 1. Create app in workspace integrations.
 2. Configure:
+
 - `Setup URL`
 - `Redirect URI`
 - `Webhook URL`
+
 3. Enable `Enable App Mentions`.
 4. Grant required scopes.
 5. Save `client_id` and `client_secret`.
@@ -67,7 +69,7 @@ When creating an activity via `POST /api/v1/workspaces/{slug}/agent-runs/{id}/ac
 
 ```json
 {
-  "type": "thought", 
+  "type": "thought",
   "content": {
     "type": "thought",
     "body": "Analyzing work items..."
@@ -99,6 +101,7 @@ When creating an activity via `POST /api/v1/workspaces/{slug}/agent-runs/{id}/ac
 - Includes `agent_run` and `agent_run_activity` objects.
 
 Common payload fields used in examples:
+
 - `agent_run.id`
 - `agent_run.workspace.slug`
 - `agent_run_activity.content.body`
@@ -107,6 +110,7 @@ Common payload fields used in examples:
 ## Agent Activity Types
 
 Primary activity/content types described in docs:
+
 - `prompt`
 - `thought` (ephemeral)
 - `action` (ephemeral)
@@ -115,6 +119,7 @@ Primary activity/content types described in docs:
 - `error` (ephemeral)
 
 Suggested usage pattern:
+
 - `thought` quickly after webhook receipt.
 - `action` for tool progress/steps.
 - `response` for final answer.
@@ -124,12 +129,15 @@ Suggested usage pattern:
 ## Signals & Metadata
 
 ### `continue`
+
 No metadata required. Used for intermediate status (thought/action).
 
 ### `stop`
+
 No metadata required. Finalizes the run (response).
 
 ### `select`
+
 Requires `options` in `signal_metadata`. Use with `elicitation`.
 
 ```json
@@ -150,6 +158,7 @@ Requires `options` in `signal_metadata`. Use with `elicitation`.
 ```
 
 ### `auth_request`
+
 Requires `url` in `signal_metadata`. Use with `elicitation`.
 
 ```json
@@ -169,12 +178,14 @@ Requires `url` in `signal_metadata`. Use with `elicitation`.
 ## Scope Reference (From OAuth Scopes Page)
 
 Agent run scopes:
+
 - `agents.runs:read`
 - `agents.runs:write`
 - `agents.run_activities:read`
 - `agents.run_activities:write`
 
 Work-item and project scopes (when needed):
+
 - `project_issues:read`
 - `project_issues:write`
 - `issue_activities:read`

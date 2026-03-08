@@ -15,7 +15,11 @@ import {
   type PlaneConfig,
 } from "../db/database.js"
 import { useAppContext } from "../hooks/app-context.js"
-import { PlaneContext, type PlaneContextValue, usePlane } from "../hooks/plane.js"
+import {
+  PlaneContext,
+  type PlaneContextValue,
+  usePlane,
+} from "../hooks/plane.js"
 import { PlaneConfigScreen } from "./plane-config.js"
 
 type WorkspaceInfo = {

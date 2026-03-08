@@ -26,7 +26,9 @@ type CreateTestAppOptions = {
 export async function createTestApp(options: CreateTestAppOptions = {}) {
   const requireFromHere = createRequire(import.meta.url)
   const planeSdkRequire = createRequire(
-    requireFromHere.resolve("@makeplane/plane-node-sdk/dist/api/BaseResource.js"),
+    requireFromHere.resolve(
+      "@makeplane/plane-node-sdk/dist/api/BaseResource.js",
+    ),
   )
   const planeSdkAxios = planeSdkRequire("axios") as import("axios").AxiosStatic
   const axiosMock = new AxiosMockAdapter(planeSdkAxios)

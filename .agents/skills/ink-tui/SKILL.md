@@ -38,58 +38,61 @@ npx create-ink-app --typescript my-cli
 ```
 
 ```tsx
-import React from 'react';
-import {render, Box, Text, useInput, useApp} from 'ink';
+import React from "react"
+import { render, Box, Text, useInput, useApp } from "ink"
 
 const App = () => {
-  const {exit} = useApp();
+  const { exit } = useApp()
 
   useInput((input, key) => {
-    if (input === 'q') exit();
-  });
+    if (input === "q") exit()
+  })
 
   return (
     <Box flexDirection="column" gap={1}>
-      <Text bold color="cyan">My CLI</Text>
+      <Text bold color="cyan">
+        My CLI
+      </Text>
       <Text dimColor>Press q to quit</Text>
     </Box>
-  );
-};
+  )
+}
 
-render(<App />);
+render(<App />)
 ```
 
 ---
 
 ## Core Components
 
-| Component | Purpose |
-|---|---|
-| `<Text>` | Render styled text (color, bold, italic, underline, wrap/truncate) |
-| `<Box>` | Flexbox layout container — padding, margin, border, gap, flex props |
-| `<Newline>` | Insert `\n` inside `<Text>` |
-| `<Spacer>` | Flexible space between items |
-| `<Static>` | Permanently rendered output (completed tasks, logs) |
-| `<Transform>` | Transform string output (gradients, effects) |
+| Component     | Purpose                                                             |
+| ------------- | ------------------------------------------------------------------- |
+| `<Text>`      | Render styled text (color, bold, italic, underline, wrap/truncate)  |
+| `<Box>`       | Flexbox layout container — padding, margin, border, gap, flex props |
+| `<Newline>`   | Insert `\n` inside `<Text>`                                         |
+| `<Spacer>`    | Flexible space between items                                        |
+| `<Static>`    | Permanently rendered output (completed tasks, logs)                 |
+| `<Transform>` | Transform string output (gradients, effects)                        |
 
 ## Core Hooks
 
-| Hook | Purpose |
-|---|---|
-| `useInput(handler, {isActive})` | Keyboard input handling |
-| `useApp()` | `{exit}` — unmount the app |
-| `useFocus({id, autoFocus, isActive})` | `{isFocused}` — focusable components |
-| `useFocusManager()` | `{focusNext, focusPrevious, focus, activeId}` |
-| `useStdout()` | `{write}` — write outside Ink's output |
-| `useStdin()` | `{isRawModeSupported, setRawMode}` |
-| `useCursor()` | `{setCursorPosition}` — IME cursor control |
-| `useIsScreenReaderEnabled()` | Accessibility detection |
+| Hook                                  | Purpose                                       |
+| ------------------------------------- | --------------------------------------------- |
+| `useInput(handler, {isActive})`       | Keyboard input handling                       |
+| `useApp()`                            | `{exit}` — unmount the app                    |
+| `useFocus({id, autoFocus, isActive})` | `{isFocused}` — focusable components          |
+| `useFocusManager()`                   | `{focusNext, focusPrevious, focus, activeId}` |
+| `useStdout()`                         | `{write}` — write outside Ink's output        |
+| `useStdin()`                          | `{isRawModeSupported, setRawMode}`            |
+| `useCursor()`                         | `{setCursorPosition}` — IME cursor control    |
+| `useIsScreenReaderEnabled()`          | Accessibility detection                       |
 
 ---
 
 ## Workflow
 
 ### 1. Assess the TUI type needed
+
 - **Static output** (progress, logs): use `<Static>` + simple state
 - **Interactive menu**: use `@inkjs/ui Select` (primary) or `ink-select-input`
 - **Form**: use `@inkjs/ui TextInput` (primary) or `ink-form`
@@ -97,10 +100,12 @@ render(<App />);
 - **Multi-screen**: use `react-router` (MemoryRouter) or screen state + `useInput`
 
 ### 2. Choose components from ecosystem
+
 Consult `references/ecosystem-components.md` for the right package.
 **MANDATORY**: Prefer `@inkjs/ui` for all standard inputs (Select, TextInput, Confirm, etc.) — it is the official library and ensures visual consistency.
 
 ### 3. Structure the app
+
 ```
 src/
   index.tsx        ← render() entry point
@@ -110,11 +115,13 @@ src/
 ```
 
 ### 4. Handle input correctly
+
 - Use `useInput` with `{isActive}` to prevent input conflicts between panels
 - Always guard `setRawMode` with `isRawModeSupported`
 - Clean up all timers and listeners in `useEffect` return
 
 ### 5. Performance & Polish
+
 - Use `<Static>` for completed/immutable output — never re-renders
 - Set `incrementalRendering: true` to minimize flicker during updates and terminal resizes
 - Use `ink-virtual-list` for lists with 100+ items
@@ -125,17 +132,23 @@ src/
 ## Common Patterns
 
 ### Loading + Spinner
-```tsx
-import Spinner from 'ink-spinner';
 
-{loading ? (
-  <Text color="green"><Spinner type="dots" /> Processing...</Text>
-) : (
-  <Text color="green">Done!</Text>
-)}
+```tsx
+import Spinner from "ink-spinner"
+
+{
+  loading ? (
+    <Text color="green">
+      <Spinner type="dots" /> Processing...
+    </Text>
+  ) : (
+    <Text color="green">Done!</Text>
+  )
+}
 ```
 
 ### Bordered Panel with Title
+
 ```tsx
 <Box borderStyle="round" borderColor="blue" flexDirection="column" padding={1}>
   <Text bold>Panel Title</Text>
@@ -144,10 +157,11 @@ import Spinner from 'ink-spinner';
 ```
 
 ### Task List
-```tsx
-import {TaskList, Task} from 'ink-task-list';
 
-<TaskList>
+```tsx
+import { TaskList, Task } from "ink-task-list"
+
+;<TaskList>
   <Task label="Step 1" state="success" />
   <Task label="Step 2" state="loading" />
   <Task label="Step 3" state="pending" />
@@ -155,51 +169,57 @@ import {TaskList, Task} from 'ink-task-list';
 ```
 
 ### Keyboard-Navigated List
+
 ```tsx
-const [index, setIndex] = useState(0);
+const [index, setIndex] = useState(0)
 
 useInput((input, key) => {
-  if (key.upArrow) setIndex(i => Math.max(0, i - 1));
-  if (key.downArrow) setIndex(i => Math.min(items.length - 1, i + 1));
-  if (key.return) onSelect(items[index]);
-});
+  if (key.upArrow) setIndex((i) => Math.max(0, i - 1))
+  if (key.downArrow) setIndex((i) => Math.min(items.length - 1, i + 1))
+  if (key.return) onSelect(items[index])
+})
 
 return (
   <Box flexDirection="column">
     {items.map((item, i) => (
-      <Text key={item.id} color={i === index ? 'blue' : undefined}>
-        {i === index ? '▶ ' : '  '}{item.label}
+      <Text key={item.id} color={i === index ? "blue" : undefined}>
+        {i === index ? "▶ " : "  "}
+        {item.label}
       </Text>
     ))}
   </Box>
-);
+)
 ```
 
 ### Multi-Screen App
+
 ```tsx
-type Screen = 'home' | 'list' | 'detail';
-const [screen, setScreen] = useState<Screen>('home');
+type Screen = "home" | "list" | "detail"
+const [screen, setScreen] = useState<Screen>("home")
 
 useInput((input, key) => {
-  if (key.escape && screen !== 'home') setScreen('home');
-  if (input === 'q') exit();
-});
+  if (key.escape && screen !== "home") setScreen("home")
+  if (input === "q") exit()
+})
 
 const screens: Record<Screen, JSX.Element> = {
   home: <HomeScreen onNavigate={setScreen} />,
-  list: <ListScreen onSelect={() => setScreen('detail')} />,
-  detail: <DetailScreen onBack={() => setScreen('list')} />,
-};
+  list: <ListScreen onSelect={() => setScreen("detail")} />,
+  detail: <DetailScreen onBack={() => setScreen("list")} />,
+}
 
-return screens[screen];
+return screens[screen]
 ```
 
 ### Terminal Dimensions
-```tsx
-import useStdoutDimensions from 'ink-use-stdout-dimensions';
 
-const [columns, rows] = useStdoutDimensions();
-<Box width={columns} height={rows}>...</Box>
+```tsx
+import useStdoutDimensions from "ink-use-stdout-dimensions"
+
+const [columns, rows] = useStdoutDimensions()
+;<Box width={columns} height={rows}>
+  ...
+</Box>
 ```
 
 ---
@@ -208,13 +228,13 @@ const [columns, rows] = useStdoutDimensions();
 
 ```tsx
 render(<App />, {
-  exitOnCtrlC: true,          // default: true
-  patchConsole: true,          // prevent console.log conflicts
-  incrementalRendering: true,  // only redraw changed lines
-  maxFps: 30,                  // default: 30fps
-  concurrent: true,            // React concurrent mode + Suspense
-  kittyKeyboard: {mode: 'auto'}, // enhanced keyboard (kitty/WezTerm/Ghostty)
-});
+  exitOnCtrlC: true, // default: true
+  patchConsole: true, // prevent console.log conflicts
+  incrementalRendering: true, // only redraw changed lines
+  maxFps: 30, // default: 30fps
+  concurrent: true, // React concurrent mode + Suspense
+  kittyKeyboard: { mode: "auto" }, // enhanced keyboard (kitty/WezTerm/Ghostty)
+})
 ```
 
 ---
@@ -222,11 +242,11 @@ render(<App />, {
 ## Testing
 
 ```tsx
-import {render} from 'ink-testing-library';
+import { render } from "ink-testing-library"
 
-const {lastFrame, stdin} = render(<MyComponent prop="value" />);
-expect(lastFrame()).toContain('Expected text');
-stdin.write('q'); // simulate keypress
+const { lastFrame, stdin } = render(<MyComponent prop="value" />)
+expect(lastFrame()).toContain("Expected text")
+stdin.write("q") // simulate keypress
 ```
 
 ---

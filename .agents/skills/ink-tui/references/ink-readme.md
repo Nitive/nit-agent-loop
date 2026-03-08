@@ -11,23 +11,23 @@ npm install ink react
 ## Usage
 
 ```jsx
-import React, {useState, useEffect} from 'react';
-import {render, Text} from 'ink';
+import React, { useState, useEffect } from "react"
+import { render, Text } from "ink"
 
 const Counter = () => {
-	const [counter, setCounter] = useState(0);
+  const [counter, setCounter] = useState(0)
 
-	useEffect(() => {
-		const timer = setInterval(() => {
-			setCounter(previousCounter => previousCounter + 1);
-		}, 100);
-		return () => clearInterval(timer);
-	}, []);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCounter((previousCounter) => previousCounter + 1)
+    }, 100)
+    return () => clearInterval(timer)
+  }, [])
 
-	return <Text color="green">{counter} tests passed</Text>;
-};
+  return <Text color="green">{counter} tests passed</Text>
+}
 
-render(<Counter />);
+render(<Counter />)
 ```
 
 ## Scaffolding
@@ -46,9 +46,9 @@ npx create-ink-app --typescript my-ink-cli
 - `waitUntilExit()` — runs code after the app is unmounted
 
 ```jsx
-const {waitUntilExit} = render(<MyApp />);
-await waitUntilExit();
-console.log('App exited');
+const { waitUntilExit } = render(<MyApp />)
+await waitUntilExit()
+console.log("App exited")
 ```
 
 ---
@@ -177,7 +177,7 @@ Permanently renders output above everything else. For completed tasks, logs, etc
 
 ```jsx
 <Static items={tests}>
-  {test => (
+  {(test) => (
     <Box key={test.id}>
       <Text color="green">✔ {test.title}</Text>
     </Box>
@@ -216,14 +216,21 @@ Handle keyboard input. Called for each character; for pasted text (multi-char), 
 
 ```jsx
 useInput((input, key) => {
-  if (input === 'q') exit();
-  if (key.leftArrow) { /* left */ }
-  if (key.return) { /* enter */ }
-  if (key.ctrl && input === 'c') { /* ctrl+c */ }
-});
+  if (input === "q") exit()
+  if (key.leftArrow) {
+    /* left */
+  }
+  if (key.return) {
+    /* enter */
+  }
+  if (key.ctrl && input === "c") {
+    /* ctrl+c */
+  }
+})
 ```
 
 **`key` object:**
+
 - `leftArrow`, `rightArrow`, `upArrow`, `downArrow` — boolean
 - `return` — Enter key
 - `escape` — Escape key
@@ -240,7 +247,7 @@ useInput((input, key) => {
 ### `useApp()`
 
 ```jsx
-const {exit} = useApp();
+const { exit } = useApp()
 // exit() → resolves undefined
 // exit(error) → rejects
 // exit(value) → resolves with value
@@ -251,7 +258,7 @@ const {exit} = useApp();
 ### `useStdin()`
 
 ```jsx
-const {stdin, isRawModeSupported, setRawMode} = useStdin();
+const { stdin, isRawModeSupported, setRawMode } = useStdin()
 // Always use Ink's setRawMode, not process.stdin.setRawMode
 // Check isRawModeSupported before calling setRawMode
 ```
@@ -261,8 +268,8 @@ const {stdin, isRawModeSupported, setRawMode} = useStdin();
 ### `useStdout()`
 
 ```jsx
-const {stdout, write} = useStdout();
-write('External output above Ink\n'); // won't conflict with Ink output
+const { stdout, write } = useStdout()
+write("External output above Ink\n") // won't conflict with Ink output
 ```
 
 ---
@@ -270,8 +277,8 @@ write('External output above Ink\n'); // won't conflict with Ink output
 ### `useStderr()`
 
 ```jsx
-const {stderr, write} = useStderr();
-write('Error message\n');
+const { stderr, write } = useStderr()
+write("Error message\n")
 ```
 
 ---
@@ -281,11 +288,11 @@ write('Error message\n');
 Makes component focusable. Tab cycles through focusable components.
 
 ```jsx
-const {isFocused} = useFocus({
-  autoFocus: false,  // auto-focus if nothing else is focused
-  isActive: true,    // temporarily disable without losing position
-  id: 'my-input',   // programmatic focus by ID
-});
+const { isFocused } = useFocus({
+  autoFocus: false, // auto-focus if nothing else is focused
+  isActive: true, // temporarily disable without losing position
+  id: "my-input", // programmatic focus by ID
+})
 ```
 
 ---
@@ -293,7 +300,8 @@ const {isFocused} = useFocus({
 ### `useFocusManager()`
 
 ```jsx
-const {enableFocus, disableFocus, focusNext, focusPrevious, focus, activeId} = useFocusManager();
+const { enableFocus, disableFocus, focusNext, focusPrevious, focus, activeId } =
+  useFocusManager()
 // focus('someId') — programmatically focus by ID
 // activeId — ID of currently focused component
 // Tab → focusNext(), Shift+Tab → focusPrevious()
@@ -306,8 +314,8 @@ const {enableFocus, disableFocus, focusNext, focusPrevious, focus, activeId} = u
 Control terminal cursor position for IME support.
 
 ```jsx
-const {setCursorPosition} = useCursor();
-setCursorPosition({x: stringWidth(prompt + text), y: 1});
+const { setCursorPosition } = useCursor()
+setCursorPosition({ x: stringWidth(prompt + text), y: 1 })
 // Pass undefined to hide cursor
 // Use string-width for CJK/emoji
 ```
@@ -317,7 +325,7 @@ setCursorPosition({x: stringWidth(prompt + text), y: 1});
 ### `useIsScreenReaderEnabled()`
 
 ```jsx
-const isEnabled = useIsScreenReaderEnabled();
+const isEnabled = useIsScreenReaderEnabled()
 ```
 
 ---
@@ -345,6 +353,7 @@ Returns `Instance` with: `rerender(tree)`, `unmount()`, `waitUntilExit()`, `clea
 | `onRender` | function | undefined | Called after each render with `{renderTime}` |
 
 **kittyKeyboard options:**
+
 - `mode`: `'auto'|'enabled'|'disabled'` — auto detects kitty/WezTerm/Ghostty
 - `flags`: array of `'disambiguateEscapeCodes'|'reportEventTypes'|'reportAlternateKeys'|'reportAllKeysAsEscapeCodes'|'reportAssociatedText'`
 
@@ -355,11 +364,11 @@ Renders to string synchronously, no terminal. Useful for tests, docs, file outpu
 ### `measureElement(ref)`
 
 ```jsx
-const ref = useRef();
+const ref = useRef()
 useEffect(() => {
-  const {width, height} = measureElement(ref.current);
-}, []);
-return <Box ref={ref}>...</Box>;
+  const { width, height } = measureElement(ref.current)
+}, [])
+return <Box ref={ref}>...</Box>
 ```
 
 Returns `{width, height}`. Call from useEffect/useLayoutEffect, not during render.
@@ -369,10 +378,10 @@ Returns `{width, height}`. Call from useEffect/useLayoutEffect, not during rende
 ## Testing
 
 ```jsx
-import {render} from 'ink-testing-library';
+import { render } from "ink-testing-library"
 
-const {lastFrame} = render(<Test />);
-lastFrame() === 'Hello World'; //=> true
+const { lastFrame } = render(<Test />)
+lastFrame() === "Hello World" //=> true
 ```
 
 ---
@@ -420,36 +429,36 @@ Requires `react-devtools-core` installed.
 
 ## Useful Components (Official List)
 
-| Package | Description |
-|---|---|
-| `ink-text-input` | Text input |
-| `ink-spinner` | Spinner |
-| `ink-select-input` | Select/dropdown |
-| `ink-link` | Clickable hyperlink |
-| `ink-gradient` | Gradient color text |
-| `ink-big-text` | Large ASCII art text |
-| `ink-picture` | Display images |
-| `ink-tab` | Tabs |
-| `ink-color-pipe` | Color text with style strings |
-| `ink-multi-select` | Multi-select list |
-| `ink-divider` | Horizontal divider |
-| `ink-progress-bar` | Progress bar |
-| `ink-table` | Table |
-| `ink-ascii` | ASCII art text (Figlet fonts) |
-| `ink-markdown` | Syntax-highlighted Markdown |
-| `ink-quicksearch-input` | Select with quicksearch |
-| `ink-confirm-input` | Yes/No confirmation |
-| `ink-syntax-highlight` | Code syntax highlighting |
-| `ink-form` | Form with fields |
-| `ink-task-list` | Task list |
-| `ink-spawn` | Spawn child processes |
-| `ink-titled-box` | Box with a title |
-| `ink-chart` | Sparkline and bar chart |
-| `ink-scroll-view` | Scroll container |
-| `ink-scroll-list` | Scrollable list |
-| `ink-stepper` | Step-by-step wizard |
-| `ink-virtual-list` | Virtualized list |
-| `ink-color-picker` | Color picker |
-| `@inkjs/ui` | Official component library (TextInput, Select, etc.) |
-| `ink-use-stdout-dimensions` | Subscribe to terminal dimensions |
-| `ink-testing-library` | Testing utilities |
+| Package                     | Description                                          |
+| --------------------------- | ---------------------------------------------------- |
+| `ink-text-input`            | Text input                                           |
+| `ink-spinner`               | Spinner                                              |
+| `ink-select-input`          | Select/dropdown                                      |
+| `ink-link`                  | Clickable hyperlink                                  |
+| `ink-gradient`              | Gradient color text                                  |
+| `ink-big-text`              | Large ASCII art text                                 |
+| `ink-picture`               | Display images                                       |
+| `ink-tab`                   | Tabs                                                 |
+| `ink-color-pipe`            | Color text with style strings                        |
+| `ink-multi-select`          | Multi-select list                                    |
+| `ink-divider`               | Horizontal divider                                   |
+| `ink-progress-bar`          | Progress bar                                         |
+| `ink-table`                 | Table                                                |
+| `ink-ascii`                 | ASCII art text (Figlet fonts)                        |
+| `ink-markdown`              | Syntax-highlighted Markdown                          |
+| `ink-quicksearch-input`     | Select with quicksearch                              |
+| `ink-confirm-input`         | Yes/No confirmation                                  |
+| `ink-syntax-highlight`      | Code syntax highlighting                             |
+| `ink-form`                  | Form with fields                                     |
+| `ink-task-list`             | Task list                                            |
+| `ink-spawn`                 | Spawn child processes                                |
+| `ink-titled-box`            | Box with a title                                     |
+| `ink-chart`                 | Sparkline and bar chart                              |
+| `ink-scroll-view`           | Scroll container                                     |
+| `ink-scroll-list`           | Scrollable list                                      |
+| `ink-stepper`               | Step-by-step wizard                                  |
+| `ink-virtual-list`          | Virtualized list                                     |
+| `ink-color-picker`          | Color picker                                         |
+| `@inkjs/ui`                 | Official component library (TextInput, Select, etc.) |
+| `ink-use-stdout-dimensions` | Subscribe to terminal dimensions                     |
+| `ink-testing-library`       | Testing utilities                                    |
