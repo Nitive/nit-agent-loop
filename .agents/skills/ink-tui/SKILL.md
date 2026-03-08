@@ -160,7 +160,6 @@ import Spinner from "ink-spinner"
 
 ```tsx
 import { TaskList, Task } from "ink-task-list"
-
 ;<TaskList>
   <Task label="Step 1" state="success" />
   <Task label="Step 2" state="loading" />

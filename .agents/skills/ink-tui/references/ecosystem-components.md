@@ -37,7 +37,6 @@ npm install ink-text-input
 
 ```tsx
 import TextInput from "ink-text-input"
-
 ;<TextInput
   value={value}
   onChange={setValue}
@@ -58,7 +57,6 @@ npm install ink-select-input
 
 ```tsx
 import SelectInput from "ink-select-input"
-
 ;<SelectInput
   items={[
     { label: "First", value: "first" },
@@ -80,7 +78,6 @@ npm install ink-multi-select
 
 ```tsx
 import MultiSelect from "ink-multi-select"
-
 ;<MultiSelect
   items={[
     { label: "A", value: "a" },
@@ -98,7 +95,6 @@ npm install ink-confirm-input
 
 ```tsx
 import ConfirmInput from "ink-confirm-input"
-
 ;<ConfirmInput isChecked={confirmed} onChange={setConfirmed} />
 ```
 
@@ -122,7 +118,6 @@ npm install ink-spinner
 
 ```tsx
 import Spinner from "ink-spinner"
-
 ;<Text color="green">
   <Spinner type="dots" /> Loading...
 </Text>
@@ -138,7 +133,6 @@ npm install ink-progress-bar
 
 ```tsx
 import ProgressBar from "ink-progress-bar"
-
 ;<ProgressBar percent={0.5} />
 ```
 
@@ -150,7 +144,6 @@ npm install ink-task-list
 
 ```tsx
 import { TaskList, Task } from "ink-task-list"
-
 ;<TaskList>
   <Task label="Install dependencies" state="success" />
   <Task label="Build project" state="loading" />
@@ -174,7 +167,6 @@ npm install ink-table
 
 ```tsx
 import Table from "ink-table"
-
 ;<Table
   data={[
     { name: "Alice", age: 30, role: "Admin" },
@@ -204,7 +196,6 @@ npm install ink-titled-box
 
 ```tsx
 import TitledBox from "ink-titled-box"
-
 ;<TitledBox title="My Panel">
   <Text>Content inside</Text>
 </TitledBox>
@@ -218,7 +209,6 @@ npm install ink-tab
 
 ```tsx
 import { Tabs, Tab } from "ink-tab"
-
 ;<Tabs onChange={(name) => setActive(name)}>
   <Tab name="one">One</Tab>
   <Tab name="two">Two</Tab>
@@ -299,7 +289,6 @@ npm install ink-link
 
 ```tsx
 import Link from "ink-link"
-
 ;<Link url="https://github.com">GitHub</Link>
 ```
 
@@ -313,7 +302,6 @@ npm install ink-markdown
 
 ```tsx
 import Markdown from "ink-markdown"
-
 ;<Markdown>{markdownString}</Markdown>
 ```
 
@@ -373,7 +361,6 @@ Full form management with validation.
 
 ```tsx
 import InkForm from "ink-form"
-
 ;<InkForm
   form={{
     sections: [

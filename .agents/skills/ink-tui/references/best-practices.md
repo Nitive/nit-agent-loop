@@ -328,7 +328,6 @@ render(<App />, { incrementalRendering: true }) // only redraws changed lines
 ```tsx
 // Use ink-virtual-list for 100+ items
 import VirtualList from "ink-virtual-list"
-
 ;<VirtualList items={largeArray} itemHeight={1}>
   {(item) => <Text key={item.id}>{item.name}</Text>}
 </VirtualList>
