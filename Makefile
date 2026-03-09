@@ -11,7 +11,7 @@ agent-start-in-docker:
 	@ mkdir -p ./agent/.sock
 	@ chmod 700 ./agent/.sock
 	@ $(compose) up -d --force-recreate --remove-orphans agent
-	@ $(compose) logs -f --no-log-prefix agent | ./agent/wait-for-start.sh
+	@ node ./agent/wait-for-line.js "Started" -- $(compose) logs -f --no-log-prefix agent
 
 check-agent:
 	@ if [ "$$(docker inspect $(container_name) 2>/dev/null | jq -r '.[].State.Status')" != "running" ]; then \
