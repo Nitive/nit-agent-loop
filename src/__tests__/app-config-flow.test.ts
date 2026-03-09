@@ -22,6 +22,8 @@ describe("app config flow", () => {
     await t1.waitForStableFrame({
       test(frame) {
         expect(frame).toContain("q:Quit c:Config")
+        expect(frame).toContain("Project Tasks")
+        expect(frame).toContain("Task Details")
       },
     })
     await t1.destroy({
@@ -33,8 +35,8 @@ describe("app config flow", () => {
     await t2.waitForStableFrame({
       test(frame) {
         expect(frame).toContain("q:Quit c:Config")
-        expect(frame).toContain("Plane Projects")
-        expect(frame).toContain("Workspace")
+        expect(frame).toContain("Project Tasks")
+        expect(frame).toContain("Task Details")
       },
     })
 
