@@ -1,7 +1,7 @@
 import process from "node:process"
 import { PlaneClient, type Project } from "@makeplane/plane-node-sdk"
 import { Box, Text, useApp, useInput } from "ink"
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import {
   MemoryRouter,
   Navigate,
@@ -148,10 +148,11 @@ const MainScreen = ({
           width="50%"
           height="100%"
           borderStyle="single"
-          justifyContent="center"
-          alignItems="center"
+          flexDirection="column"
+          padding={1}
         >
-          <Text>(world)</Text>
+          <Text color="cyan">Workspace</Text>
+          <Text dimColor>Press c to open configuration.</Text>
         </Box>
       </Box>
       <Box height={1} paddingX={1}>
@@ -166,15 +167,70 @@ const ConfigScreen = ({
   height,
   planeConfig,
   setupRequired,
+  plane,
   onSaveConfig,
 }: {
   width: number
   height: number
   planeConfig: PlaneConfig
   setupRequired: boolean
-  onSaveConfig: (config: { workspaceUrl: string; token: string }) => void
+  plane: PlaneContextValue | null
+  onSaveConfig: (config: {
+    workspaceUrl: string
+    token: string
+    selectedProjectId: string | null
+  }) => void
 }) => {
   const navigate = useNavigate()
+  const [projects, setProjects] = useState<Project[]>([])
+  const [isLoadingProjects, setIsLoadingProjects] = useState(false)
+  const [projectsError, setProjectsError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let isActive = true
+
+    const loadProjects = async () => {
+      if (plane === null || plane.workspaceSlug === null) {
+        setProjects([])
+        setProjectsError(null)
+        setIsLoadingProjects(false)
+        return
+      }
+
+      setIsLoadingProjects(true)
+      setProjectsError(null)
+      try {
+        const response = await plane.client.projects.list(plane.workspaceSlug)
+        const nextProjects = Array.isArray(response.results)
+          ? response.results
+          : []
+        if (!isActive) {
+          return
+        }
+
+        setProjects(nextProjects)
+      } catch (error) {
+        if (!isActive) {
+          return
+        }
+
+        setProjects([])
+        setProjectsError(
+          error instanceof Error ? error.message : "Unable to load projects.",
+        )
+      } finally {
+        if (isActive) {
+          setIsLoadingProjects(false)
+        }
+      }
+    }
+
+    loadProjects()
+
+    return () => {
+      isActive = false
+    }
+  }, [plane])
 
   return (
     <PlaneConfigScreen
@@ -182,6 +238,10 @@ const ConfigScreen = ({
       height={height}
       initialWorkspaceUrl={planeConfig.workspaceUrl ?? ""}
       initialToken={planeConfig.token ?? ""}
+      initialSelectedProjectId={planeConfig.selectedProjectId}
+      projects={projects}
+      isLoadingProjects={isLoadingProjects}
+      projectsError={projectsError}
       allowCancel={!setupRequired}
       onSave={(config) => {
         onSaveConfig(config)
@@ -222,6 +282,22 @@ export const AppView = () => {
     }
   }, [planeConfig.workspaceUrl, planeConfig.token])
 
+  const updatePlaneConfig = useCallback(
+    (nextConfig: PlaneConfig) => {
+      setPlaneConfig(nextConfig)
+      if (!nextConfig.workspaceUrl || !nextConfig.token) {
+        return
+      }
+
+      savePlaneConfig(database, {
+        workspaceUrl: nextConfig.workspaceUrl,
+        token: nextConfig.token,
+        selectedProjectId: nextConfig.selectedProjectId,
+      })
+    },
+    [database],
+  )
+
   return (
     <MemoryRouter initialEntries={[setupRequired ? "/config" : "/"]}>
       <Routes>
@@ -245,9 +321,17 @@ export const AppView = () => {
               height={height}
               planeConfig={planeConfig}
               setupRequired={setupRequired}
-              onSaveConfig={({ workspaceUrl, token }) => {
-                savePlaneConfig(database, { workspaceUrl, token })
-                setPlaneConfig({ workspaceUrl, token })
+              plane={plane}
+              onSaveConfig={({ workspaceUrl, token, selectedProjectId }) => {
+                const workspaceChanged =
+                  planeConfig.workspaceUrl !== workspaceUrl ||
+                  planeConfig.token !== token
+
+                updatePlaneConfig({
+                  workspaceUrl,
+                  token,
+                  selectedProjectId: workspaceChanged ? null : selectedProjectId,
+                })
               }}
             />
           }

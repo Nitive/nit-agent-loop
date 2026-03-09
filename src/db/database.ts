@@ -6,10 +6,12 @@ export const defaultDatabasePath = path.join(defaultDataDir, "app.sqlite")
 
 const planeWorkspaceUrlKey = "plane.workspace_url"
 const planeTokenKey = "plane.token"
+const planeSelectedProjectIdKey = "plane.selected_project_id"
 
 export type PlaneConfig = {
   workspaceUrl: string | null
   token: string | null
+  selectedProjectId: string | null
 }
 
 export const openDatabase = (databasePath = defaultDatabasePath) => {
@@ -56,17 +58,32 @@ export const setMetaValue = (
     .run(key, value)
 }
 
+export const deleteMetaValue = (database: DatabaseSync, key: string) => {
+  database.prepare("DELETE FROM app_meta WHERE key = ?").run(key)
+}
+
 export const getPlaneConfig = (database: DatabaseSync): PlaneConfig => {
   return {
     workspaceUrl: getMetaValue(database, planeWorkspaceUrlKey),
     token: getMetaValue(database, planeTokenKey),
+    selectedProjectId: getMetaValue(database, planeSelectedProjectIdKey),
   }
 }
 
 export const savePlaneConfig = (
   database: DatabaseSync,
-  config: { workspaceUrl: string; token: string },
+  config: {
+    workspaceUrl: string
+    token: string
+    selectedProjectId: string | null
+  },
 ) => {
   setMetaValue(database, planeWorkspaceUrlKey, config.workspaceUrl)
   setMetaValue(database, planeTokenKey, config.token)
+  if (config.selectedProjectId === null) {
+    deleteMetaValue(database, planeSelectedProjectIdKey)
+    return
+  }
+
+  setMetaValue(database, planeSelectedProjectIdKey, config.selectedProjectId)
 }

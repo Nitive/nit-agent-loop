@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { getPlaneConfig } from "../db/database.js"
 import { createTestApp } from "../test-helpers/app.js"
 
 describe("app projects list", () => {
@@ -7,7 +8,7 @@ describe("app projects list", () => {
 
     await t.waitForStableFrame({
       test(frame) {
-        expect(frame).toContain("Plane Configuration")
+        expect(frame).toContain("Configuration")
       },
     })
 
@@ -27,17 +28,53 @@ describe("app projects list", () => {
         ],
       })
 
+    await t.writeInput("\r")
     await t.writeInput("https://plane.example.com/my-team")
+    await t.writeInput("\r")
     await t.writeInput("\t")
+    await t.writeInput("\r")
     await t.writeInput("plane-token-123")
     await t.writeInput("\r")
+    await t.writeInput("\u0013")
 
     await t.waitForStableFrame({
       test(frame) {
         expect(frame).toContain("Plane Projects")
         expect(frame).toContain("ALPHA: Project Alpha")
         expect(frame).toContain("Project Beta")
+        expect(frame).toContain("q:Quit c:Config")
       },
     })
+
+    await t.writeInput("c")
+    await t.writeInput("\t")
+    await t.writeInput("\t")
+    await t.writeInput("\r")
+    await t.waitForStableFrame({
+      test(frame) {
+        expect(frame).toContain("Select Project")
+        expect(frame).toContain("ALPHA: Project Alpha")
+        expect(frame).toContain("Project Beta")
+      },
+    })
+
+    await t.writeInput("\u001B[B")
+    await t.writeInput("\r")
+    await t.waitForStableFrame({
+      test(frame) {
+        expect(frame).toContain("Project:")
+        expect(frame).toContain("Project Beta")
+      },
+    })
+
+    await t.writeInput("\u0013")
+    await t.waitForStableFrame({
+      test(frame) {
+        expect(frame).toContain("Plane Projects")
+        expect(frame).toContain("Workspace")
+      },
+    })
+
+    expect(getPlaneConfig(t.database).selectedProjectId).toBe("project-2")
   })
 })
