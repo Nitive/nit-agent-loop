@@ -31,8 +31,8 @@ pnpm config set store-dir ~/.pnpm-store --global
 echo "Installing codex..."
 pnpm install -g @openai/codex@$(pnpm info @openai/codex --json | jq -r .version)
 
-cat <<EOF > ~/.bash_aliases
-eval "\$(mise activate bash)"
+cat <<'EOF' > ~/.bash_aliases
+eval "$(mise activate bash)"
 
 alias ll='ls -lA'
 
@@ -47,14 +47,31 @@ if [ ! -f ~/.ssh/authorized_keys ]; then
   cat ~/.ssh/id.pub > ~/.ssh/authorized_keys
 fi
 
+ssh_env_file=~/.ssh/environment
+{
+  while IFS= read -r -d '' entry; do
+    variable="${entry%%=*}"
+    value="${entry#*=}"
+
+    if [[ ! "$variable" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+      continue
+    fi
+
+    if [[ "$value" == *$'\n'* ]]; then
+      continue
+    fi
+
+    printf '%s=%s\n' "$variable" "$value"
+  done < /proc/1/environ
+} > "$ssh_env_file"
+chmod 600 "$ssh_env_file"
+
 cat <<EOF > ~/.ssh/container-known-hosts
 agent-unix $(cat /etc/ssh/ssh_host_ed25519_key.pub)
 EOF
 
 sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
-if ! grep -q '^ListenAddress 127.0.0.1$' /etc/ssh/sshd_config; then
-  echo 'ListenAddress 127.0.0.1' | sudo tee -a /etc/ssh/sshd_config > /dev/null
-fi
+sudo sed -i 's/^#PermitUserEnvironment no$/PermitUserEnvironment yes/g' /etc/ssh/sshd_config
 
 sudo mkdir -p /run/sshd
 sudo /usr/sbin/sshd

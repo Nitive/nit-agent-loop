@@ -3,6 +3,8 @@ services:
     container_name: ${CONTAINER_NAME:-agent}-squid
     build:
       context: ./agent/squid
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - agent-internal
       - agent-egress
@@ -32,6 +34,7 @@ services:
       https_proxy: http://squid:3128
       all_proxy: http://squid:3128
       no_proxy: localhost,127.0.0.1,squid
+      NIT_PLANE_WORKSPACE: http://host.docker.internal:10555/main
     stdin_open: true
     tty: true
     networks:

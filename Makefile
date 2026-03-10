@@ -22,7 +22,7 @@ agent: check-agent
 	$(compose) exec -it agent bash -ic 'codex resume'
 
 bash: check-agent
-	kitten ssh -i "$(PWD)/agent/.ssh/id" ubuntu@agent-unix \
+	@ kitten ssh -i "$(PWD)/agent/.ssh/id" ubuntu@agent-unix \
 	  -o HostKeyAlias=agent-unix \
 	  -o UserKnownHostsFile=$(PWD)/agent/.ssh/container-known-hosts \
 	  -o ProxyCommand="socat - UNIX-CONNECT:$(PWD)/agent/.sock/ssh.sock"
