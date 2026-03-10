@@ -43,7 +43,7 @@ services:
       - ./agent/.ssh:/home/ubuntu/.ssh
       - ./agent/.sock:/run/agent-sock
       - ./agent/.codex/config.toml:/home/ubuntu/.codex/config.toml
-      - ./agent/.agents:/home/ubuntu/.agents
+      - ./.agents:/home/ubuntu/.agents
       - ${HOST_CODEX_AUTH}:/home/ubuntu/.codex/auth.json:ro
     cpus: 4
     mem_limit: 5g
