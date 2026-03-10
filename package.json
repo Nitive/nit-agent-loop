@@ -9,7 +9,8 @@
     "@mariozechner/pi-ai": "^0.57.0",
     "ink": "^6.8.0",
     "react": "^19.2.4",
-    "react-router": "^7.13.1"
+    "react-router": "^7.13.1",
+    "svix": "^1.87.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

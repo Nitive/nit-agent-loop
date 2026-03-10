@@ -3,17 +3,28 @@ import { Box, Text, useInput } from "ink"
 import { useEffect, useMemo, useState } from "react"
 
 type ConfigMessage = {
-  tone: "error" | "info"
+  tone: "error" | "info" | "success"
   text: string
 }
 
-type ConfigField = "workspaceUrl" | "token" | "project"
+type EventLog = {
+  id: string
+  message: string
+  timestamp: string
+}
+
+type ConfigField =
+  | "workspaceUrl"
+  | "publicHost"
+  | "token"
+  | "webhookSecret"
+  | "project"
 type ConfigProject = {
   id: string
   name: string
   identifier?: string | null
 }
-type TextEditField = "workspaceUrl" | "token"
+type TextEditField = "workspaceUrl" | "publicHost" | "token" | "webhookSecret"
 type EditModalState =
   | {
       kind: TextEditField
@@ -27,15 +38,30 @@ type PlaneConfigScreenProps = {
   width: number
   height: number
   initialWorkspaceUrl: string
+  initialPublicHost: string
   initialToken: string
+  initialWebhookSecret: string
   initialSelectedProjectId: string | null
+  webhookUrl: string | null
+  planeWebhooksSettingsUrl: string | null
   projects: ConfigProject[]
   isLoadingProjects: boolean
   projectsError: string | null
+  eventLogs?: EventLog[]
+  isEventLogsOpen?: boolean
+  onToggleEventLogs?: () => void
+  onCloseEventLogs?: () => void
+  statusLine?: ConfigMessage
+  statusDetails?: string | null
+  isStatusDetailsOpen?: boolean
+  onToggleStatusDetails?: () => void
+  onCloseStatusDetails?: () => void
   allowCancel: boolean
   onSave: (config: {
     workspaceUrl: string
+    publicHost: string
     token: string
+    webhookSecret: string | null
     selectedProjectId: string | null
   }) => void
   onCancel: () => void
@@ -60,9 +86,44 @@ const normalizeWorkspaceUrl = (value: string) => {
   }
 }
 
+const normalizePublicHost = (value: string) => {
+  const trimmed = value.trim()
+  if (!trimmed) {
+    return "localhost"
+  }
+
+  try {
+    const normalizedUrl = new URL(
+      trimmed.includes("://") ? trimmed : `http://${trimmed}`,
+    )
+    if (
+      (normalizedUrl.protocol !== "http:" &&
+        normalizedUrl.protocol !== "https:") ||
+      !normalizedUrl.hostname
+    ) {
+      return null
+    }
+
+    normalizedUrl.pathname = ""
+    normalizedUrl.search = ""
+    normalizedUrl.hash = ""
+    return trimmed.includes("://")
+      ? `${normalizedUrl.protocol}//${normalizedUrl.host}`
+      : normalizedUrl.host
+  } catch {
+    return null
+  }
+}
+
 const maskValue = (value: string) => "*".repeat(value.length)
 
-const fieldOrder: ConfigField[] = ["workspaceUrl", "token", "project"]
+const fieldOrder: ConfigField[] = [
+  "workspaceUrl",
+  "publicHost",
+  "token",
+  "webhookSecret",
+  "project",
+]
 
 const getProjectLabel = (project: ConfigProject) => {
   return project.identifier
@@ -92,18 +153,35 @@ export const PlaneConfigScreen = ({
   width,
   height,
   initialWorkspaceUrl,
+  initialPublicHost,
   initialToken,
+  initialWebhookSecret,
   initialSelectedProjectId,
+  webhookUrl,
+  planeWebhooksSettingsUrl,
   projects,
   isLoadingProjects,
   projectsError,
+  eventLogs = [],
+  isEventLogsOpen = false,
+  onToggleEventLogs,
+  onCloseEventLogs,
+  statusLine,
+  statusDetails,
+  isStatusDetailsOpen = false,
+  onToggleStatusDetails,
+  onCloseStatusDetails,
   allowCancel,
   onSave,
   onCancel,
 }: PlaneConfigScreenProps) => {
   const [workspaceUrlInput, setWorkspaceUrlInput] =
     useState(initialWorkspaceUrl)
+  const [publicHostInput, setPublicHostInput] = useState(initialPublicHost)
   const [tokenInput, setTokenInput] = useState(initialToken)
+  const [webhookSecretInput, setWebhookSecretInput] = useState(
+    initialWebhookSecret,
+  )
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     initialSelectedProjectId,
   )
@@ -136,6 +214,16 @@ export const PlaneConfigScreen = ({
       return
     }
 
+    if (activeField === "webhookSecret") {
+      setEditModal({ kind: "webhookSecret" })
+      return
+    }
+
+    if (activeField === "publicHost") {
+      setEditModal({ kind: "publicHost" })
+      return
+    }
+
     setEditModal({
       kind: "project",
       selectedProjectId: getSelectedProjectIdOrFallback(
@@ -155,6 +243,15 @@ export const PlaneConfigScreen = ({
       return
     }
 
+    const normalizedPublicHost = normalizePublicHost(publicHostInput)
+    if (!normalizedPublicHost) {
+      setMessage({
+        tone: "error",
+        text: "Please set a valid public host before saving.",
+      })
+      return
+    }
+
     const normalizedToken = tokenInput.trim()
     if (!normalizedToken) {
       setMessage({
@@ -163,18 +260,35 @@ export const PlaneConfigScreen = ({
       })
       return
     }
+    const normalizedWebhookSecret = webhookSecretInput.trim() || null
 
     onSave({
       workspaceUrl: normalizedWorkspaceUrl,
+      publicHost: normalizedPublicHost,
       token: normalizedToken,
+      webhookSecret: normalizedWebhookSecret,
       selectedProjectId,
     })
   }
 
   useInput((input, key) => {
+    if (isStatusDetailsOpen && (key.escape || input === "e")) {
+      onCloseStatusDetails?.()
+      return
+    }
+    if (isEventLogsOpen && (key.escape || input === "l")) {
+      onCloseEventLogs?.()
+      return
+    }
+
     if (editModal !== null) {
       if (key.escape) {
         setEditModal(null)
+        return
+      }
+
+      if (input === "l") {
+        onToggleEventLogs?.()
         return
       }
 
@@ -191,6 +305,15 @@ export const PlaneConfigScreen = ({
 
     if (input === "\u0013") {
       saveConfig()
+      return
+    }
+
+    if (input === "e" && statusDetails) {
+      onToggleStatusDetails?.()
+      return
+    }
+    if (input === "l") {
+      onToggleEventLogs?.()
       return
     }
 
@@ -223,16 +346,29 @@ export const PlaneConfigScreen = ({
   })
 
   const hotKeysLabel = (() => {
+    const detailsHotKey =
+      statusDetails !== undefined && statusDetails !== null
+        ? isStatusDetailsOpen
+          ? "  e/Esc:Hide Error"
+          : "  e:Show Error"
+        : ""
+    const logsHotKey = isEventLogsOpen ? "  l/Esc:Hide Logs" : "  l:Logs"
+
     if (editModal?.kind === "project") {
-      return "Up/Down:Select  Enter:Apply  Esc:Cancel"
+      return `Up/Down:Select  Enter:Apply  Esc:Cancel${logsHotKey}${detailsHotKey}`
     }
-    if (editModal?.kind === "workspaceUrl" || editModal?.kind === "token") {
-      return "Type text  Enter:Apply  Esc:Cancel"
+    if (
+      editModal?.kind === "workspaceUrl" ||
+      editModal?.kind === "publicHost" ||
+      editModal?.kind === "token" ||
+      editModal?.kind === "webhookSecret"
+    ) {
+      return `Type text  Enter:Apply  Esc:Cancel${logsHotKey}${detailsHotKey}`
     }
     if (allowCancel) {
-      return "Tab/Up/Down:Navigate  Enter:Edit  Ctrl+S:Save  Esc:Back"
+      return `Tab/Up/Down:Navigate  Enter:Edit  Ctrl+S:Save  Esc:Back${logsHotKey}${detailsHotKey}`
     }
-    return "Tab/Up/Down:Navigate  Enter:Edit  Ctrl+S:Save"
+    return `Tab/Up/Down:Navigate  Enter:Edit  Ctrl+S:Save${logsHotKey}${detailsHotKey}`
   })()
 
   return (
@@ -244,9 +380,21 @@ export const PlaneConfigScreen = ({
           Workspace URL:{" "}
           <Text color="yellow">{workspaceUrlInput || "<empty>"}</Text>
         </Text>
+        <Text color={activeField === "publicHost" ? "green" : undefined}>
+          {activeField === "publicHost" ? "> " : "  "}
+          Public Host:{" "}
+          <Text color="yellow">{publicHostInput || "<empty>"}</Text>
+        </Text>
         <Text color={activeField === "token" ? "green" : undefined}>
           {activeField === "token" ? "> " : "  "}
           Token: <Text color="yellow">{tokenInput ? maskValue(tokenInput) : "<empty>"}</Text>
+        </Text>
+        <Text color={activeField === "webhookSecret" ? "green" : undefined}>
+          {activeField === "webhookSecret" ? "> " : "  "}
+          Webhook Secret:{" "}
+          <Text color="yellow">
+            {webhookSecretInput ? maskValue(webhookSecretInput) : "<empty>"}
+          </Text>
         </Text>
         <Text color={activeField === "project" ? "green" : undefined}>
           {activeField === "project" ? "> " : "  "}
@@ -256,6 +404,16 @@ export const PlaneConfigScreen = ({
               ? getProjectLabel(selectedProject)
               : selectedProjectId ?? "<empty>"}
           </Text>
+        </Text>
+        <Text>  Webhook URL: <Text color="yellow">{webhookUrl ?? "<unavailable>"}</Text></Text>
+        <Text>
+          {"  "}Plane Webhooks Page:{" "}
+          <Text color="yellow">
+            {planeWebhooksSettingsUrl ?? "<unavailable>"}
+          </Text>
+        </Text>
+        <Text dimColor>
+          Add the webhook URL in Plane and paste generated secret here.
         </Text>
         {message ? (
           <Text color={message.tone === "error" ? "red" : "yellow"}>
@@ -294,6 +452,32 @@ export const PlaneConfigScreen = ({
                 />
               </>
             ) : null}
+            {editModal.kind === "webhookSecret" ? (
+              <>
+                <Text color="cyan">Edit Webhook Secret</Text>
+                <TextInput
+                  defaultValue={webhookSecretInput}
+                  placeholder="Plane webhook secret"
+                  onSubmit={(value) => {
+                    setWebhookSecretInput(value)
+                    setEditModal(null)
+                  }}
+                />
+              </>
+            ) : null}
+            {editModal.kind === "publicHost" ? (
+              <>
+                <Text color="cyan">Edit Public Host</Text>
+                <TextInput
+                  defaultValue={publicHostInput}
+                  placeholder="localhost"
+                  onSubmit={(value) => {
+                    setPublicHostInput(value)
+                    setEditModal(null)
+                  }}
+                />
+              </>
+            ) : null}
             {editModal.kind === "project" ? (
               <>
                 <Text color="cyan">Select Project</Text>
@@ -326,9 +510,46 @@ export const PlaneConfigScreen = ({
             ) : null}
           </Box>
         ) : null}
+        {isStatusDetailsOpen && statusDetails ? (
+          <Box marginTop={1} borderStyle="round" flexDirection="column" padding={1}>
+            <Text color="red">Webhook Error Details</Text>
+            <Text>{statusDetails}</Text>
+            <Text dimColor>Press e or Esc to close.</Text>
+          </Box>
+        ) : null}
+        {isEventLogsOpen ? (
+          <Box marginTop={1} borderStyle="round" flexDirection="column" padding={1}>
+            <Text color="cyan">Recent Events</Text>
+            {eventLogs.length === 0 ? (
+              <Text dimColor>No events yet.</Text>
+            ) : (
+              eventLogs.map((entry) => (
+                <Text key={entry.id}>
+                  <Text dimColor>[{entry.timestamp}] </Text>
+                  {entry.message}
+                </Text>
+              ))
+            )}
+            <Text dimColor>Press l or Esc to close.</Text>
+          </Box>
+        ) : null}
       </Box>
-      <Box height={1} paddingX={1}>
+      <Box height={statusLine ? 2 : 1} paddingX={1} flexDirection="column">
         <Text dimColor>{hotKeysLabel}</Text>
+        {statusLine ? (
+          <Text
+            color={
+              statusLine.tone === "error"
+                ? "red"
+                : statusLine.tone === "success"
+                  ? "green"
+                  : undefined
+            }
+            dimColor={statusLine.tone === "info"}
+          >
+            {statusLine.text}
+          </Text>
+        ) : null}
       </Box>
     </Box>
   )
